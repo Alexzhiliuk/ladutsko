@@ -30,3 +30,17 @@ def create_user_profile(sender, instance, created, **kwargs):
 
 post_save.connect(create_user_profile, sender=User)
 
+
+class Application(models.Model):
+
+    first_name = models.CharField(max_length=32)
+    last_name = models.CharField(max_length=32)
+    middle_name = models.CharField(max_length=32, null=True, blank=True)
+    group_id = models.IntegerField()
+
+    class Meta:
+        verbose_name = "Заявка"
+        verbose_name_plural = "Заявки"
+
+    def __str__(self):
+        return f"{self.last_name} {self.first_name}, группа {self.group_id}"
