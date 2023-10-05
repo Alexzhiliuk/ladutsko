@@ -3,6 +3,7 @@ from django.views import View
 from django.http import HttpResponse
 from .forms import LoginForm
 from django.contrib.auth import authenticate, login
+from django.contrib import messages
 
 
 class LoginView(View):
@@ -14,10 +15,12 @@ class LoginView(View):
                 request, username=cd["username"], password=cd["password"]
             )
             if user is None:
-                return HttpResponse("Invalid login")
+                messages.error(request, "Неверный логин или пароль!")
+                return render(request, "accounts/login.html", {"form": form})
 
             if not user.is_active:
-                return HttpResponse("Disabled account")
+                messages.error(request, "Аккаунт заблокирован!")
+                return render(request, "accounts/login.html", {"form": form})
 
             login(request, user)
             return HttpResponse("Welcome! Authenticated successfully")
