@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 class Group(models.Model):
     owner = models.ForeignKey(User, related_name="study_groups", on_delete=models.SET_NULL, null=True)
     name = models.CharField(max_length=128)
+    students = models.ManyToManyField(User, blank=True)
 
     class Meta:
         verbose_name = "Группа"
