@@ -31,14 +31,19 @@ class ApplicationForm(forms.ModelForm):
 class UserEditForm(forms.ModelForm):
     class Meta:
         model = User
-        fields = ("id", "first_name", "last_name", "email")
-        labels = {"id": "ID", "first_name": "Имя", "last_name": "Фамилия", "email": "Email"}
+        fields = ("first_name", "last_name", "email")
+        labels = {"first_name": "Имя", "last_name": "Фамилия", "email": "Email"}
 
     def __init__(self, *args, **kwargs):
         super(UserEditForm, self).__init__(*args, **kwargs)
 
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form__input'
+
+
+class UserCreateForm(UserEditForm):
+
+    password = forms.CharField(max_length=64, label="Пароль")
 
 
 class ProfileEditForm(forms.ModelForm):

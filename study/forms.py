@@ -15,4 +15,4 @@ class AdminProfileEditForm(ProfileEditForm):
             queryset=Group.objects.all(),
             label='Группа',
         )
-
+        self.fields['group'].required = False

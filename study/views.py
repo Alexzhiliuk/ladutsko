@@ -8,11 +8,12 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 from django.utils.decorators import method_decorator
 from .decorators.is_admin import admin_only
-from accounts.forms import UserEditForm
+from accounts.forms import UserEditForm, UserCreateForm
 from .forms import AdminProfileEditForm
 from .models import Group
 from django.shortcuts import get_object_or_404
-
+from django.core.mail import send_mail
+from django.conf import settings
 
 
 class IndexView(LoginRequiredMixin, View):
@@ -94,6 +95,56 @@ class TeacherEditView(LoginRequiredMixin, View):
             "teacher_group": teacher_group,
             "groups": groups,
             "teacher": teacher,
+        })
+
+
+@method_decorator(admin_only, name="dispatch")
+class TeacherCreateView(LoginRequiredMixin, View):
+    def post(selfs, request, *args, **kwargs):
+        user_form = UserCreateForm(request.POST)
+        profile_form = AdminProfileEditForm(request.POST)
+
+        if user_form.is_valid() and profile_form.is_valid():
+
+            new_user = user_form.save(commit=False)
+            new_user_password = user_form.cleaned_data.get("password")
+            new_user.set_password(new_user_password)
+            new_user.username = new_user.email
+            new_user.save()
+
+            profile = new_user.profile
+            profile.middle_name = profile_form.cleaned_data.get("middle_name")
+            profile.type = 2
+            profile.save()
+
+            group = profile_form.cleaned_data.get("group")
+            if group:
+                group.owner = new_user
+                group.save()
+
+            try:
+                send_mail(
+                    "Данные для входа",
+                    f"Логин - ваша почта: {new_user.email}\nПароль: {new_user_password}",
+                    settings.EMAIL_HOST_USER,
+                    [new_user.email])
+            except Exception as err:
+                print(err)
+                messages.error(request, "Не получилось отправить письмо на почту")
+
+            messages.success(request, "Пользователь успешно создан!")
+            return redirect(reverse("teachers"))
+
+        return redirect(reverse("teacher-add"))
+
+    def get(self, request, *args, **kwargs):
+        user_form = UserCreateForm()
+        profile_form = AdminProfileEditForm()
+        groups = Group.objects.all()
+        return render(request, "study/teacher-add.html", {
+            "user_form": user_form,
+            "profile_form": profile_form,
+            "groups": groups,
         })
 
 
