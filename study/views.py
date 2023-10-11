@@ -88,9 +88,20 @@ class TeacherEditView(LoginRequiredMixin, View):
         teacher_group = teacher.study_groups.first()
         groups = Group.objects.all()
 
-        return render(request, "study/user-edit.html", {
+        return render(request, "study/teacher-edit.html", {
             "user_form": user_form,
             "profile_form": profile_form,
             "teacher_group": teacher_group,
             "groups": groups,
+            "teacher": teacher,
         })
+
+
+def delete_teacher(request, pk):
+
+    teacher = get_object_or_404(User, pk=pk)
+    username = teacher.username
+    teacher.delete()
+    messages.success(request, f"Учитель {username} удален!")
+
+    return redirect(reverse("teachers"))

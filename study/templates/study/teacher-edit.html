@@ -3,7 +3,7 @@
 {% load static %}
 
 
-{% block page_title %}Пользователь{% endblock %}
+{% block page_title %}Учитель{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/select.css' %}">
@@ -15,6 +15,10 @@
 
     <form action="." method="POST" class="form mt-40">
         {% csrf_token %}
+        <div class="form__item">
+            <label class="form__label">ID</label>
+            <input class="form__input" value="{{ teacher.pk }}" disabled>
+        </div>
         <div class="form__item">
             <label for="{{ user_form.last_name.id_for_label }}" class="form__label">{{ user_form.last_name.label }}</label>
             {{ user_form.last_name }}
@@ -53,7 +57,7 @@
             <button type="submit" class="btn">Сохранить</button>
         </div>
         <div class="form__item">
-            <button data-url="/teacher/delete/1" class="btn btn_red confirm submit">Удалить</button>
+            <a href="{% url 'teacher-delete' teacher.pk %}" class="btn btn_red confirm submit">Удалить</a>
         </div>
 
     </form>
@@ -81,13 +85,21 @@
     })
 
     // Confirm
-    $(".confirm").on('click', function() {
+    $(".confirm.confirm-ajax").on('click', function(event) {
         var req = confirm("Вы уверены?");
         if (req){
             var url = $(this).attr("data-url");
             $.get(url);
         }
         event.preventDefault();
+    })
+
+    $(".confirm").on('click', function(e) {
+        var req = confirm("Вы уверены?");
+        if (!req){
+            event.preventDefault();
+        }
+
     })
 </script>
 {% endblock %}
