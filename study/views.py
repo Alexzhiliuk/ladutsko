@@ -8,6 +8,11 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 from django.utils.decorators import method_decorator
 from .decorators.is_admin import admin_only
+from accounts.forms import UserEditForm
+from .forms import AdminProfileEditForm
+from .models import Group
+from django.shortcuts import get_object_or_404
+
 
 
 class IndexView(LoginRequiredMixin, View):
@@ -47,3 +52,45 @@ class TeachersListView(LoginRequiredMixin, ListView):
         context = super().get_context_data(**kwargs)
 
         return context
+
+
+@method_decorator(admin_only, name="dispatch")
+class TeacherEditView(LoginRequiredMixin, View):
+
+    def post(self, request, pk, *args, **kwargs):
+        teacher = get_object_or_404(User, pk=pk)
+        user_form = UserEditForm(instance=teacher, data=request.POST)
+        profile_form = AdminProfileEditForm(instance=teacher.profile, data=request.POST)
+        if user_form.is_valid() and profile_form.is_valid():
+            user = user_form.save()
+            user.username = user.email
+            user.save()
+
+            group = profile_form.cleaned_data.get("group")
+            profile = profile_form.save()
+
+            if group.owner and group.owner != user:
+                messages.error(request, f"У группы {group.name} уже есть учитель!")
+                return redirect(reverse("teacher", kwargs={"pk": pk}))
+
+            group.owner = profile.user
+            group.save()
+
+            messages.success(request, "Пользователь успешно изменен!")
+
+        return redirect(reverse("teacher", kwargs={"pk": pk}))
+
+    def get(self, request, pk, *args, **kwargs):
+        teacher = get_object_or_404(User, pk=pk)
+        user_form = UserEditForm(instance=teacher)
+        profile_form = AdminProfileEditForm(instance=teacher.profile)
+
+        teacher_group = teacher.study_groups.first()
+        groups = Group.objects.all()
+
+        return render(request, "study/user-edit.html", {
+            "user_form": user_form,
+            "profile_form": profile_form,
+            "teacher_group": teacher_group,
+            "groups": groups,
+        })
