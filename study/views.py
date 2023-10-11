@@ -100,7 +100,7 @@ class TeacherEditView(LoginRequiredMixin, View):
 
 @method_decorator(admin_only, name="dispatch")
 class TeacherCreateView(LoginRequiredMixin, View):
-    def post(selfs, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         user_form = UserCreateForm(request.POST)
         profile_form = AdminProfileEditForm(request.POST)
 
@@ -148,6 +148,7 @@ class TeacherCreateView(LoginRequiredMixin, View):
         })
 
 
+@admin_only
 def delete_teacher(request, pk):
 
     teacher = get_object_or_404(User, pk=pk)

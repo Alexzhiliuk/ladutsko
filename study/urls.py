@@ -8,4 +8,6 @@ urlpatterns = [
     path("teacher/<int:pk>/", views.TeacherEditView.as_view(), name="teacher"),
     path("teacher/delete/<int:pk>/", views.delete_teacher, name="teacher-delete"),
     path("teacher/add/", views.TeacherCreateView.as_view(), name="teacher-add"),
+
+    # path("students/", views.StudentsListView.as_view(), name="students"),
 ]
