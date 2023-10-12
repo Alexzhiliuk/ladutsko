@@ -216,6 +216,55 @@ class StudentEditView(LoginRequiredMixin, View):
         })
 
 
+@method_decorator(admin_only, name="dispatch")
+class StudentCreateView(LoginRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
+        user_form = UserCreateForm(request.POST)
+        profile_form = AdminProfileEditForm(request.POST)
+
+        if user_form.is_valid() and profile_form.is_valid():
+
+            new_user = user_form.save(commit=False)
+            new_user_password = user_form.cleaned_data.get("password")
+            new_user.set_password(new_user_password)
+            new_user.username = new_user.email
+            new_user.save()
+
+            profile = new_user.profile
+            profile.middle_name = profile_form.cleaned_data.get("middle_name")
+            profile.type = 3
+            profile.save()
+
+            group = profile_form.cleaned_data.get("group")
+            if group:
+                group.students.add(new_user)
+
+            try:
+                send_mail(
+                    "Данные для входа",
+                    f"Логин - ваша почта: {new_user.email}\nПароль: {new_user_password}",
+                    settings.EMAIL_HOST_USER,
+                    [new_user.email])
+            except Exception as err:
+                print(err)
+                messages.error(request, "Не получилось отправить письмо на почту")
+
+            messages.success(request, "Пользователь успешно создан!")
+            return redirect(reverse("students"))
+
+        return redirect(reverse("student-add"))
+
+    def get(self, request, *args, **kwargs):
+        user_form = UserCreateForm()
+        profile_form = AdminProfileEditForm()
+        groups = Group.objects.all()
+        return render(request, "study/student-add.html", {
+            "user_form": user_form,
+            "profile_form": profile_form,
+            "groups": groups,
+        })
+
+
 @admin_only
 def delete_student(request, pk):
 
