@@ -21,7 +21,7 @@ class IndexView(LoginRequiredMixin, View):
         "admin": {
             "Пользователи": {
                 "Учителя": reverse_lazy("teachers"),
-                "Ученики": "#",
+                "Ученики": reverse_lazy("students"),
             },
             "Заявки": "#",
             "Группы": "#",
@@ -157,3 +157,61 @@ def delete_teacher(request, pk):
     messages.success(request, f"Учитель {username} удален!")
 
     return redirect(reverse("teachers"))
+
+
+@method_decorator(admin_only, name="dispatch")
+class StudentsListView(LoginRequiredMixin, ListView):
+    model = User
+    context_object_name = "objects"
+    template_name = "study/students.html"
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        return qs.filter(profile__type=3)
+
+
+@method_decorator(admin_only, name="dispatch")
+class StudentEditView(LoginRequiredMixin, View):
+
+    def post(self, request, pk, *args, **kwargs):
+        student = get_object_or_404(User, pk=pk)
+        user_form = UserEditForm(instance=student, data=request.POST)
+        profile_form = AdminProfileEditForm(instance=student.profile, data=request.POST)
+        if user_form.is_valid() and profile_form.is_valid():
+            user = user_form.save()
+            user.username = user.email
+            user.save()
+
+            group = profile_form.cleaned_data.get("group")
+            user_group = user.group_set.first()
+            profile_form.save()
+
+            if group:
+                if not(user in group.students.all()):
+                    if user_group:
+                        user_group.students.remove(user)
+                    group.students.add(user)
+            else:
+                if user_group:
+                    user_group.students.remove(user)
+
+            messages.success(request, "Пользователь успешно изменен!")
+
+        return redirect(reverse("student", kwargs={"pk": pk}))
+
+    def get(self, request, pk, *args, **kwargs):
+        student = get_object_or_404(User, pk=pk)
+        user_form = UserEditForm(instance=student)
+        profile_form = AdminProfileEditForm(instance=student.profile)
+
+        student_group = student.group_set.first()
+        groups = Group.objects.all()
+
+        return render(request, "study/student-edit.html", {
+            "user_form": user_form,
+            "profile_form": profile_form,
+            "student_group": student_group,
+            "groups": groups,
+            "student": student,
+        })
+

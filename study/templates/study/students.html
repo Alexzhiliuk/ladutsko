@@ -29,14 +29,14 @@
             {% for user in objects %}
             <tr>
                 <td>
-                    <a href="#" class="table__object-url">{{ user.id }}</a>
+                    <a href="{% url 'student' user.id %}" class="table__object-url">{{ user.id }}</a>
                 </td>
                 <td>{{ user.first_name|default:"-" }}</td>
                 <td>{{ user.last_name|default:"-" }}</td>
                 <td>{{ user.profile.middle_name|default_if_none:"-" }}</td>
                 <td>{{ user.email|default:"-" }}</td>
                 <td>
-                    <a href="#" class="table__foreign-key">{{ user.study_groups.first.id }}</a>
+                    <a href="#" class="table__foreign-key">{{ user.group_set.first.id }}</a>
                 </td>
             </tr>
             {% endfor %}
