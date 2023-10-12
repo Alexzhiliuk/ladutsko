@@ -215,3 +215,13 @@ class StudentEditView(LoginRequiredMixin, View):
             "student": student,
         })
 
+
+@admin_only
+def delete_student(request, pk):
+
+    student = get_object_or_404(User, pk=pk)
+    username = student.username
+    student.delete()
+    messages.success(request, f"Ученик {username} удален!")
+
+    return redirect(reverse("students"))
