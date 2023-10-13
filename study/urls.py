@@ -25,4 +25,5 @@ urlpatterns = [
 
     path("subjects/", views.SubjectsListView.as_view(), name="subjects"),
     path("subject/<int:pk>/", views.SubjectEditView.as_view(), name="subject"),
+    path("subject/add/", views.SubjectCreateView.as_view(), name="subject-add"),
 ]

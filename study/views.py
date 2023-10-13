@@ -425,3 +425,19 @@ class SubjectEditView(LoginRequiredMixin, View):
         form = SubjectForm(instance=subject)
         groups = Group.objects.all()
         return render(request, "study/subjects/edit.html", {"form": form, "subject": subject, "groups": groups})
+
+
+@method_decorator(admin_only, name="dispatch")
+class SubjectCreateView(LoginRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
+        form = SubjectForm(data=request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Предмет успешно создан")
+
+        return redirect(reverse("subjects"))
+
+    def get(self, request, *args, **kwargs):
+        form = SubjectForm()
+        groups = Group.objects.all()
+        return render(request, "study/subjects/add.html", {"form": form, "groups": groups})
