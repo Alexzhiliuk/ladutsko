@@ -363,3 +363,29 @@ class GroupEditView(LoginRequiredMixin, View):
         teachers = User.objects.filter(profile__type=2)
 
         return render(request, "study/group/edit.html", {"form": form, "group": group, "teachers": teachers})
+
+
+@method_decorator(admin_only, name="dispatch")
+class GroupCreateView(LoginRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
+        form = GroupForm(request.POST)
+        if form.is_valid():
+            owner = form.cleaned_data.get("owner")
+            if owner:
+                if owner.study_groups.first():
+                    messages.error(request, f"Учитель {owner} уже владеет группой {owner.study_groups.first()}!")
+                    return redirect(reverse("group-add"))
+                new_group = form.save(commit=False)
+                new_group.owner = owner
+                new_group.save()
+            else:
+                form.save()
+
+            messages.success(request, "Группа успешно создана!")
+
+        return redirect(reverse("groups"))
+
+    def get(self, request, *args, **kwargs):
+        form = GroupForm()
+        teachers = User.objects.filter(profile__type=2)
+        return render(request, "study/group/add.html", {"form": form, "teachers": teachers})
