@@ -389,3 +389,14 @@ class GroupCreateView(LoginRequiredMixin, View):
         form = GroupForm()
         teachers = User.objects.filter(profile__type=2)
         return render(request, "study/group/add.html", {"form": form, "teachers": teachers})
+
+
+@admin_only
+def delete_group(request, pk):
+
+    group = get_object_or_404(Group, pk=pk)
+    name = group.name
+    group.delete()
+    messages.success(request, f"Группа {name} удалена!")
+
+    return redirect(reverse("groups"))
