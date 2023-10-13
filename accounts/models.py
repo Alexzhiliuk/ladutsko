@@ -32,6 +32,7 @@ post_save.connect(create_user_profile, sender=User)
 
 class Application(models.Model):
 
+    email = models.EmailField()
     first_name = models.CharField(max_length=32)
     last_name = models.CharField(max_length=32)
     middle_name = models.CharField(max_length=32, null=True, blank=True)
