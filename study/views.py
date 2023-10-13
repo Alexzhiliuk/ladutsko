@@ -10,7 +10,7 @@ from django.utils.decorators import method_decorator
 from .decorators.is_admin import admin_only
 from accounts.forms import UserEditForm, UserCreateForm
 from accounts.models import Application
-from .forms import AdminProfileEditForm, GroupForm
+from .forms import AdminProfileEditForm, GroupForm, SubjectForm
 from .models import Group, Subject
 from django.shortcuts import get_object_or_404
 from django.core.mail import send_mail
@@ -407,3 +407,21 @@ class SubjectsListView(LoginRequiredMixin, ListView):
     model = Subject
     context_object_name = "objects"
     template_name = "study/subjects/list.html"
+
+
+@method_decorator(admin_only, name="dispatch")
+class SubjectEditView(LoginRequiredMixin, View):
+    def post(self, request, pk, *args, **kwargs):
+        subject = get_object_or_404(Subject, pk=pk)
+        form = SubjectForm(instance=subject, data=request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Предмет успешно изменен")
+
+        return redirect(reverse("subject", kwargs={"pk": pk}))
+
+    def get(self, request, pk, *args, **kwargs):
+        subject = get_object_or_404(Subject, pk=pk)
+        form = SubjectForm(instance=subject)
+        groups = Group.objects.all()
+        return render(request, "study/subjects/edit.html", {"form": form, "subject": subject, "groups": groups})

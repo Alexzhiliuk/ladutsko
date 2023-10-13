@@ -24,4 +24,5 @@ urlpatterns = [
     path("group/add/", views.GroupCreateView.as_view(), name="group-add"),
 
     path("subjects/", views.SubjectsListView.as_view(), name="subjects"),
+    path("subject/<int:pk>/", views.SubjectEditView.as_view(), name="subject"),
 ]

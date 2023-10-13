@@ -25,11 +25,11 @@
             {% for object in objects %}
             <tr>
                 <td>
-                    <a href="#" class="table__object-url">{{ object.id }}</a>
+                    <a href="{% url 'subject' object.id %}" class="table__object-url">{{ object.id }}</a>
                 </td>
                 <td>{{ object.name|default:"-" }}</td>
                 <td>
-                    <a href="{% if object.group %}{% url 'group' object.pk %}{% endif %}" class="table__foreign-key">{{ object.group.id }}</a>
+                    <a href="{% if object.group %}{% url 'group' object.group.pk %}{% endif %}" class="table__foreign-key">{{ object.group.id }}</a>
                 </td>
             </tr>
             {% endfor %}

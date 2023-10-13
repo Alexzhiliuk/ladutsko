@@ -1,6 +1,6 @@
 from django import forms
 from accounts.forms import ProfileEditForm
-from .models import Group
+from .models import Group, Subject
 from django.contrib.auth.models import User
 
 
@@ -36,3 +36,16 @@ class GroupForm(forms.ModelForm):
             label='Владелец',
         )
         self.fields['owner'].required = False
+
+
+class SubjectForm(forms.ModelForm):
+    class Meta:
+        model = Subject
+        fields = ("name", "group")
+        labels = {"name": "Название", "group": "Группа"}
+
+    def __init__(self, *args, **kwargs):
+        super(SubjectForm, self).__init__(*args, **kwargs)
+
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form__input'
