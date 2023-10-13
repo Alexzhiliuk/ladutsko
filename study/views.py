@@ -25,7 +25,7 @@ class IndexView(LoginRequiredMixin, View):
                 "Ученики": reverse_lazy("students"),
             },
             "Заявки": reverse_lazy("applications"),
-            "Группы": "#",
+            "Группы": reverse_lazy("groups"),
             "Предметы": "#",
             "Уроки": "#",
             "Тесты": "#",
@@ -319,3 +319,10 @@ def delete_application(request, pk):
     messages.success(request, f"Заявка от {email} удален!")
 
     return redirect(reverse("applications"))
+
+
+@method_decorator(admin_only, name="dispatch")
+class GroupsListView(LoginRequiredMixin, ListView):
+    model = Group
+    context_object_name = "objects"
+    template_name = "study/group/list.html"

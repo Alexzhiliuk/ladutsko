@@ -17,4 +17,6 @@ urlpatterns = [
     path("applications/", views.ApplicationsListView.as_view(), name="applications"),
     path("application/<int:pk>/", views.ApplicationView.as_view(), name="application"),
     path("application/delete/<int:pk>/", views.delete_application, name="application-delete"),
+
+    path("groups/", views.GroupsListView.as_view(), name="groups"),
 ]
