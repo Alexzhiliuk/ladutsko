@@ -441,3 +441,14 @@ class SubjectCreateView(LoginRequiredMixin, View):
         form = SubjectForm()
         groups = Group.objects.all()
         return render(request, "study/subjects/add.html", {"form": form, "groups": groups})
+
+
+@admin_only
+def delete_subject(request, pk):
+
+    subject = get_object_or_404(Subject, pk=pk)
+    name = subject.name
+    subject.delete()
+    messages.success(request, f"Предмет {name} удален!")
+
+    return redirect(reverse("subjects"))

@@ -22,7 +22,7 @@
         <div class="form__item">
             <label for="{{ form.group.id_for_label }}" class="form__label">{{ form.group.label }}</label>
             <div class="form__input select" role="close">
-                <div class="select__selected">---</div>
+                <div class="select__selected">{{ groups.first }}</div>
                 <div class="select__options">
                     {% for group in groups %}
                     <div class="select__option" data-value="{{ group.pk }}">{{ group }}</div>
@@ -47,6 +47,7 @@
 <script>
     $("select").prop('hidden', true)
     $("select option:first").remove()
+    $("select option:first").prop("selected", true)
 
     $(".select").on('click', function() {
         if ($(this).attr("role") == "close") {
