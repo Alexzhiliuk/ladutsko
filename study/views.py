@@ -11,7 +11,7 @@ from .decorators.is_admin import admin_only
 from accounts.forms import UserEditForm, UserCreateForm
 from accounts.models import Application
 from .forms import AdminProfileEditForm, GroupForm
-from .models import Group
+from .models import Group, Subject
 from django.shortcuts import get_object_or_404
 from django.core.mail import send_mail
 from django.conf import settings
@@ -26,7 +26,7 @@ class IndexView(LoginRequiredMixin, View):
             },
             "Заявки": reverse_lazy("applications"),
             "Группы": reverse_lazy("groups"),
-            "Предметы": "#",
+            "Предметы": reverse_lazy("subjects"),
             "Уроки": "#",
             "Тесты": "#",
             "Вопросы": "#",
@@ -400,3 +400,10 @@ def delete_group(request, pk):
     messages.success(request, f"Группа {name} удалена!")
 
     return redirect(reverse("groups"))
+
+
+@method_decorator(admin_only, name="dispatch")
+class SubjectsListView(LoginRequiredMixin, ListView):
+    model = Subject
+    context_object_name = "objects"
+    template_name = "study/subjects/list.html"
