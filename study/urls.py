@@ -19,4 +19,5 @@ urlpatterns = [
     path("application/delete/<int:pk>/", views.delete_application, name="application-delete"),
 
     path("groups/", views.GroupsListView.as_view(), name="groups"),
+    path("group/<int:pk>/", views.GroupEditView.as_view(), name="group"),
 ]

@@ -10,7 +10,7 @@ from django.utils.decorators import method_decorator
 from .decorators.is_admin import admin_only
 from accounts.forms import UserEditForm, UserCreateForm
 from accounts.models import Application
-from .forms import AdminProfileEditForm
+from .forms import AdminProfileEditForm, GroupForm
 from .models import Group
 from django.shortcuts import get_object_or_404
 from django.core.mail import send_mail
@@ -326,3 +326,40 @@ class GroupsListView(LoginRequiredMixin, ListView):
     model = Group
     context_object_name = "objects"
     template_name = "study/group/list.html"
+
+
+@method_decorator(admin_only, name="dispatch")
+class GroupEditView(LoginRequiredMixin, View):
+    def post(self, request, pk, *args, **kwargs):
+        group = get_object_or_404(Group, pk=pk)
+        form = GroupForm(instance=group, data=request.POST)
+        if form.is_valid():
+            new_owner = form.cleaned_data.get("owner")
+
+            if new_owner == group.owner:
+                form.save()
+            elif new_owner:
+                if not (new_owner.study_groups.first()):
+                    group = form.save(commit=False)
+                    group.owner = new_owner
+                    group.save()
+                else:
+                    form.save()
+                    messages.error(
+                        request,
+                        f"Учитель {new_owner} уже является владельцем группы {new_owner.study_groups.first()}"
+                    )
+            else:
+                group = form.save(commit=False)
+                group.owner = None
+                group.save()
+
+            messages.success(request, "Группа успешно изменена!")
+        return redirect(reverse("group", kwargs={"pk": pk}))
+
+    def get(self, request, pk, *args, **kwargs):
+        group = get_object_or_404(Group, pk=pk)
+        form = GroupForm(instance=group)
+        teachers = User.objects.filter(profile__type=2)
+
+        return render(request, "study/group/edit.html", {"form": form, "group": group, "teachers": teachers})

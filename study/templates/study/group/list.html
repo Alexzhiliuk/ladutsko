@@ -25,9 +25,9 @@
             {% for object in objects %}
             <tr>
                 <td>
-                    <a href="#" class="table__object-url">{{ object.id }}</a>
+                    <a href="{% url 'group' object.pk %}" class="table__object-url">{{ object.id }}</a>
                 </td>
-                <td>{{ user.name|default:"-" }}</td>
+                <td>{{ object.name|default:"-" }}</td>
                 <td>
                     <a href="{% url 'teacher' object.owner.pk %}" class="table__foreign-key">{{ object.owner.username }}</a>
                 </td>
