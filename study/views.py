@@ -486,3 +486,27 @@ class LessonEditView(LoginRequiredMixin, View):
             "photos": photos
         })
 
+
+@method_decorator(admin_only, name="dispatch")
+class LessonCreateView(LoginRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
+        form = LessonForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Урок создан!")
+        return redirect(reverse("lessons"))
+
+    def get(self, request, *args, **kwargs):
+
+        form = LessonForm()
+        subjects = Subject.objects.all()
+        tests = Test.objects.all()
+        photos = LessonPhoto.objects.all()
+
+        return render(request, "study/lesson/add.html", {
+            "form": form,
+            "subjects": subjects,
+            "tests": tests,
+            "photos": photos
+        })
+
