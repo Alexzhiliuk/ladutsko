@@ -11,7 +11,7 @@ from .decorators.is_admin import admin_only
 from accounts.forms import UserEditForm, UserCreateForm
 from accounts.models import Application
 from .forms import AdminProfileEditForm, GroupForm, SubjectForm, LessonForm
-from .models import Group, Subject, Lesson, Test, LessonPhoto
+from .models import Group, Subject, Lesson, Test, LessonPhoto, Test
 from django.shortcuts import get_object_or_404
 from django.core.mail import send_mail
 from django.conf import settings
@@ -28,8 +28,7 @@ class IndexView(LoginRequiredMixin, View):
             "Группы": reverse_lazy("groups"),
             "Предметы": reverse_lazy("subjects"),
             "Уроки": reverse_lazy("lessons"),
-            "Тесты": "#",
-            "Вопросы": "#",
+            "Тесты": reverse_lazy("tests"),
         }
     }
 
@@ -520,3 +519,10 @@ def delete_lesson(request, pk):
     messages.success(request, f"Урок {name} удален!")
 
     return redirect(reverse("lessons"))
+
+
+@method_decorator(admin_only, name="dispatch")
+class TestsListView(LoginRequiredMixin, ListView):
+    model = Test
+    context_object_name = "objects"
+    template_name = "study/test/list.html"
