@@ -88,3 +88,5 @@ class AdminTestForm(forms.ModelForm):
 
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form__input'
+
+        self.fields["owner"].queryset = self.fields["owner"].queryset.filter(profile__type=2)

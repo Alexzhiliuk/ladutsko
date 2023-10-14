@@ -35,4 +35,5 @@ urlpatterns = [
 
     path("tests/", views.TestsListView.as_view(), name="tests"),
     path("test/<int:pk>/", views.TestEditView.as_view(), name="test"),
+    path("test/add/", views.TestCreateView.as_view(), name="test-add"),
 ]

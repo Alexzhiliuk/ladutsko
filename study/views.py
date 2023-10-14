@@ -548,3 +548,22 @@ class TestEditView(LoginRequiredMixin, View):
             "test": test,
             "teachers": teachers,
         })
+
+
+@method_decorator(admin_only, name="dispatch")
+class TestCreateView(LoginRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
+        form = AdminTestForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Тест создан!")
+        return redirect(reverse("tests"))
+
+    def get(self, request, *args, **kwargs):
+        form = AdminTestForm()
+        teachers = User.objects.filter(profile__type=2)
+
+        return render(request, "study/test/add.html", {
+            "form": form,
+            "teachers": teachers,
+        })
