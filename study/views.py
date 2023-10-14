@@ -567,3 +567,14 @@ class TestCreateView(LoginRequiredMixin, View):
             "form": form,
             "teachers": teachers,
         })
+
+
+@admin_only
+def delete_test(request, pk):
+
+    test = get_object_or_404(Test, pk=pk)
+    name = test.name
+    test.delete()
+    messages.success(request, f"Тест {name} удален!")
+
+    return redirect(reverse("tests"))
