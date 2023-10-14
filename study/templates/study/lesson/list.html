@@ -26,7 +26,7 @@
             {% for object in objects %}
             <tr>
                 <td>
-                    <a href="{% url 'subject' object.id %}" class="table__object-url">{{ object.id }}</a>
+                    <a href="{% url 'lesson' object.id %}" class="table__object-url">{{ object.id }}</a>
                 </td>
                 <td>{{ object.name|default:"-" }}</td>
                 <td>

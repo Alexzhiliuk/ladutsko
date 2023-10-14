@@ -10,8 +10,8 @@ from django.utils.decorators import method_decorator
 from .decorators.is_admin import admin_only
 from accounts.forms import UserEditForm, UserCreateForm
 from accounts.models import Application
-from .forms import AdminProfileEditForm, GroupForm, SubjectForm
-from .models import Group, Subject, Lesson
+from .forms import AdminProfileEditForm, GroupForm, SubjectForm, LessonForm
+from .models import Group, Subject, Lesson, Test, LessonPhoto
 from django.shortcuts import get_object_or_404
 from django.core.mail import send_mail
 from django.conf import settings
@@ -459,3 +459,30 @@ class LessonsListView(LoginRequiredMixin, ListView):
     model = Lesson
     context_object_name = "objects"
     template_name = "study/lesson/list.html"
+
+
+@method_decorator(admin_only, name="dispatch")
+class LessonEditView(LoginRequiredMixin, View):
+    def post(self, request, pk, *args, **kwargs):
+        lesson = get_object_or_404(Lesson, pk=pk)
+        form = LessonForm(instance=lesson, data=request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Урок изменен!")
+        return redirect(reverse("lesson", kwargs={"pk": pk}))
+
+    def get(self, request, pk, *args, **kwargs):
+        lesson = get_object_or_404(Lesson, pk=pk)
+        form = LessonForm(instance=lesson)
+        subjects = Subject.objects.all()
+        tests = Test.objects.all()
+        photos = LessonPhoto.objects.filter(owner=lesson.subject.group.owner)
+
+        return render(request, "study/lesson/edit.html", {
+            "form": form,
+            "lesson": lesson,
+            "subjects": subjects,
+            "tests": tests,
+            "photos": photos
+        })
+
