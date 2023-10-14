@@ -510,3 +510,13 @@ class LessonCreateView(LoginRequiredMixin, View):
             "photos": photos
         })
 
+
+@admin_only
+def delete_lesson(request, pk):
+
+    lesson = get_object_or_404(Lesson, pk=pk)
+    name = lesson.name
+    lesson.delete()
+    messages.success(request, f"Урок {name} удален!")
+
+    return redirect(reverse("lessons"))
