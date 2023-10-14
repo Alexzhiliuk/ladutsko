@@ -34,4 +34,5 @@ urlpatterns = [
     path("lesson/add/", views.LessonCreateView.as_view(), name="lesson-add"),
 
     path("tests/", views.TestsListView.as_view(), name="tests"),
+    path("test/<int:pk>/", views.TestEditView.as_view(), name="test"),
 ]

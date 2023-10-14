@@ -10,7 +10,7 @@ from django.utils.decorators import method_decorator
 from .decorators.is_admin import admin_only
 from accounts.forms import UserEditForm, UserCreateForm
 from accounts.models import Application
-from .forms import AdminProfileEditForm, GroupForm, SubjectForm, LessonForm
+from .forms import AdminProfileEditForm, GroupForm, SubjectForm, LessonForm, AdminTestForm
 from .models import Group, Subject, Lesson, Test, LessonPhoto, Test
 from django.shortcuts import get_object_or_404
 from django.core.mail import send_mail
@@ -526,3 +526,25 @@ class TestsListView(LoginRequiredMixin, ListView):
     model = Test
     context_object_name = "objects"
     template_name = "study/test/list.html"
+
+
+@method_decorator(admin_only, name="dispatch")
+class TestEditView(LoginRequiredMixin, View):
+    def post(self, request, pk, *args, **kwargs):
+        test = get_object_or_404(Test, pk=pk)
+        form = AdminTestForm(instance=test, data=request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Тест изменен!")
+        return redirect(reverse("test", kwargs={"pk": pk}))
+
+    def get(self, request, pk, *args, **kwargs):
+        test = get_object_or_404(Test, pk=pk)
+        form = AdminTestForm(instance=test)
+        teachers = User.objects.filter(profile__type=2)
+
+        return render(request, "study/test/edit.html", {
+            "form": form,
+            "test": test,
+            "teachers": teachers,
+        })

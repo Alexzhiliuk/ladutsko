@@ -1,6 +1,6 @@
 from django import forms
 from accounts.forms import ProfileEditForm
-from .models import Group, Subject, Lesson
+from .models import Group, Subject, Lesson, Test
 from django.contrib.auth.models import User
 
 
@@ -59,6 +59,32 @@ class LessonForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(LessonForm, self).__init__(*args, **kwargs)
+
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form__input'
+
+
+class TestForm(forms.ModelForm):
+    class Meta:
+        model = Test
+        fields = ["name"]
+        labels = {"name": "Название"}
+
+    def __init__(self, *args, **kwargs):
+        super(TestForm, self).__init__(*args, **kwargs)
+
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form__input'
+
+
+class AdminTestForm(forms.ModelForm):
+    class Meta:
+        model = Test
+        fields = ["name", "owner"]
+        labels = {"name": "Название", "owner": "Владелец"}
+
+    def __init__(self, *args, **kwargs):
+        super(AdminTestForm, self).__init__(*args, **kwargs)
 
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form__input'
