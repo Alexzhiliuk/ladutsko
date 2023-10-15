@@ -10,7 +10,7 @@ from django.utils.decorators import method_decorator
 from .decorators.is_admin import admin_only
 from accounts.forms import UserEditForm, UserCreateForm
 from accounts.models import Application
-from .forms import AdminProfileEditForm, GroupForm, SubjectForm, LessonForm, AdminTestForm, QuestionForm
+from .forms import AdminProfileEditForm, GroupForm, SubjectForm, LessonForm, AdminTestForm, QuestionForm, AnswerForm
 from .models import Group, Subject, Lesson, LessonPhoto, Test, Question
 from django.shortcuts import get_object_or_404
 from django.core.mail import send_mail
@@ -598,3 +598,63 @@ class TestQuestionCreateView(LoginRequiredMixin, View):
             "form": form,
             "types": Question.Type.choices
         })
+
+
+@method_decorator(admin_only, name="dispatch")
+class TestQuestionEditView(LoginRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
+        question = get_object_or_404(Question, pk=kwargs["question_pk"])
+        form = QuestionForm(instance=question, data=request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Вопрос изменен!")
+
+        return redirect(reverse("test-question", kwargs=kwargs))
+
+    def get(self, request, *args, **kwargs):
+        question = get_object_or_404(Question, pk=kwargs["question_pk"])
+        form = QuestionForm(instance=question)
+        answer_form = AnswerForm()
+        return render(request, "study/test/question.html", {
+            "form": form,
+            "answer_form": answer_form,
+            "question": question,
+        })
+
+
+@admin_only
+def add_answer_variant(request, pk):
+    if request.method == "POST":
+        question = get_object_or_404(Question, pk=pk)
+        form = AnswerForm(request.POST)
+        if form.is_valid():
+            new_answer = form.save(commit=False)
+            new_answer.question = question
+            new_answer.save()
+            messages.success(request, "Добавлен вариант ответа")
+
+        return redirect(reverse("test-question", kwargs={"question_pk": pk, "test_pk": question.test.pk}))
+    else:
+        return redirect(reverse("tests"))
+
+
+@admin_only
+def add_correct_text_answer(request, pk):
+    if request.method == "POST":
+        question = get_object_or_404(Question, pk=pk)
+        form = AnswerForm(request.POST)
+        if form.is_valid():
+            answer = question.answers.first()
+            if answer:
+                answer.text = form.cleaned_data.get("text")
+                answer.save()
+                messages.success(request, "Правильный ответ изменен")
+            else:
+                new_answer = form.save(commit=False)
+                new_answer.question = question
+                new_answer.save()
+                messages.success(request, "Правильный ответ добавлен")
+
+        return redirect(reverse("test-question", kwargs={"question_pk": pk, "test_pk": question.test.pk}))
+    else:
+        return redirect(reverse("tests"))

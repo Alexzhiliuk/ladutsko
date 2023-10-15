@@ -57,7 +57,7 @@
     <h2 class="h2 mt-40">Вопросы</h2>
     <div class="menu mt-40">
         {% for question in test.questions.all %}
-        <a href="#" class="menu__item">
+        <a href="{% url 'test-question' test.pk question.pk %}" class="menu__item">
             {{ question.text }}
             {% if question.type == 1 %}
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
