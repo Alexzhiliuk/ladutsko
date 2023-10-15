@@ -15,9 +15,34 @@
 	font-weight: 500;
 	padding: 20px;
 	cursor: pointer;
+	position: relative;
 }
 
 .checkbox__item.checkbox__item_checked {
 	background: var(--green);
 	color: white;
+}
+
+.checkbox__cross {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    translate: 0 -50%;
+}
+
+.checkbox__cross span {
+    display: block;
+    width: 10px;
+    height: 2px;
+    background: black;
+}
+
+.checkbox__cross span:first-of-type {
+    rotate: 45deg;
+    translate: 0 50%;
+}
+
+.checkbox__cross span:last-of-type {
+    rotate: -45deg;
+    translate: 0 -50%;
 }

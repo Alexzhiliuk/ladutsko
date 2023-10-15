@@ -11,7 +11,7 @@ from .decorators.is_admin import admin_only
 from accounts.forms import UserEditForm, UserCreateForm
 from accounts.models import Application
 from .forms import AdminProfileEditForm, GroupForm, SubjectForm, LessonForm, AdminTestForm, QuestionForm, AnswerForm
-from .models import Group, Subject, Lesson, LessonPhoto, Test, Question
+from .models import Group, Subject, Lesson, LessonPhoto, Test, Question, Answer
 from django.shortcuts import get_object_or_404
 from django.core.mail import send_mail
 from django.conf import settings
@@ -600,6 +600,17 @@ class TestQuestionCreateView(LoginRequiredMixin, View):
         })
 
 
+@admin_only
+def delete_question(request, test_pk, question_pk):
+
+    question = get_object_or_404(Question, pk=question_pk)
+    name = question.text
+    question.delete()
+    messages.success(request, f"Вопрос {name} удален!")
+
+    return redirect(reverse("test", kwargs={"pk": test_pk}))
+
+
 @method_decorator(admin_only, name="dispatch")
 class TestQuestionEditView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
@@ -658,3 +669,14 @@ def add_correct_text_answer(request, pk):
         return redirect(reverse("test-question", kwargs={"question_pk": pk, "test_pk": question.test.pk}))
     else:
         return redirect(reverse("tests"))
+
+
+@admin_only
+def delete_answer(request, pk):
+
+    answer = get_object_or_404(Answer, pk=pk)
+    name = answer.text
+    answer.delete()
+    messages.success(request, f"Ответ {name} удален!")
+
+    return HttpResponse("Answer delete successfully!")
