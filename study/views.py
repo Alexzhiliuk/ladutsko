@@ -10,8 +10,8 @@ from django.utils.decorators import method_decorator
 from .decorators.is_admin import admin_only
 from accounts.forms import UserEditForm, UserCreateForm
 from accounts.models import Application
-from .forms import AdminProfileEditForm, GroupForm, SubjectForm, LessonForm, AdminTestForm
-from .models import Group, Subject, Lesson, Test, LessonPhoto, Test
+from .forms import AdminProfileEditForm, GroupForm, SubjectForm, LessonForm, AdminTestForm, QuestionForm
+from .models import Group, Subject, Lesson, LessonPhoto, Test, Question
 from django.shortcuts import get_object_or_404
 from django.core.mail import send_mail
 from django.conf import settings
@@ -578,3 +578,23 @@ def delete_test(request, pk):
     messages.success(request, f"Тест {name} удален!")
 
     return redirect(reverse("tests"))
+
+
+@method_decorator(admin_only, name="dispatch")
+class TestQuestionCreateView(LoginRequiredMixin, View):
+    def post(self, request, pk, *args, **kwargs):
+        form = QuestionForm(request.POST)
+        if form.is_valid():
+            new_question = form.save(commit=False)
+            new_question.test = get_object_or_404(Test, pk=pk)
+            new_question.save()
+            messages.success(request, "Вопрос создан!")
+
+        return redirect(reverse("test", kwargs={"pk": pk}))
+
+    def get(self, request, *args, **kwargs):
+        form = QuestionForm()
+        return render(request, "study/test/question-add.html", {
+            "form": form,
+            "types": Question.Type.choices
+        })

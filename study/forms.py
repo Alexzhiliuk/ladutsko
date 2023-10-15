@@ -1,6 +1,6 @@
 from django import forms
 from accounts.forms import ProfileEditForm
-from .models import Group, Subject, Lesson, Test
+from .models import Group, Subject, Lesson, Test, Question, Answer
 from django.contrib.auth.models import User
 
 
@@ -90,3 +90,17 @@ class AdminTestForm(forms.ModelForm):
             visible.field.widget.attrs['class'] = 'form__input'
 
         self.fields["owner"].queryset = self.fields["owner"].queryset.filter(profile__type=2)
+
+
+class QuestionForm(forms.ModelForm):
+    class Meta:
+        model = Question
+        fields = ("text", "type")
+        labels = {"text": "Вопрос", "type": "Тип"}
+        widgets = {"type": forms.RadioSelect}
+
+    def __init__(self, *args, **kwargs):
+        super(QuestionForm, self).__init__(*args, **kwargs)
+
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form__input'
