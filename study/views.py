@@ -9,6 +9,7 @@ from django.contrib.auth.models import User
 from django.utils.decorators import method_decorator
 from .decorators.is_admin import admin_only
 from .decorators.is_teacher import teacher_only
+from .decorators.is_not_student import not_student
 from accounts.forms import UserEditForm, UserCreateForm
 from accounts.models import Application
 from .forms import AdminProfileEditForm, GroupForm, SubjectForm, LessonForm, AdminTestForm, QuestionForm, AnswerForm
@@ -33,7 +34,7 @@ class IndexView(LoginRequiredMixin, View):
         },
         "teacher": {
             "Моя группа": reverse_lazy("my-group"),
-            "Предметы": "#",
+            "Предметы": reverse_lazy("my-subjects"),
             "Уроки": "#",
             "Тесты": "#",
         }
@@ -451,7 +452,7 @@ class SubjectCreateView(LoginRequiredMixin, View):
         return render(request, "study/subjects/add.html", {"form": form, "groups": groups})
 
 
-@admin_only
+@not_student
 def delete_subject(request, pk):
 
     subject = get_object_or_404(Subject, pk=pk)
@@ -729,3 +730,50 @@ def exclude_student(request, pk):
     group.students.remove(student)
     messages.success(request, "Ученик был исключен")
     return redirect(reverse("my-group"))
+
+
+@method_decorator(teacher_only, name="dispatch")
+class MySubjectsListView(LoginRequiredMixin, ListView):
+    model = Subject
+    context_object_name = "objects"
+    template_name = "study/teacher/my_subjects.html"
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        return qs.filter(group__owner=self.request.user)
+
+
+@method_decorator(teacher_only, name="dispatch")
+class MySubjectCreateView(LoginRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
+        group = request.user.study_groups.first()
+        subject_name = request.POST.get("name")
+        if not group:
+            messages.error(request, "У вас нет своей группы!")
+            return redirect(reverse("index"))
+
+        Subject.objects.create(name=subject_name, group=group)
+        messages.success(request, "Предмет создан!")
+        return redirect(reverse("my-subjects"))
+
+    def get(self, request, *args, **kwargs):
+        form = SubjectForm()
+        return render(request, "study/teacher/create-subject.html", {"form": form})
+
+
+@method_decorator(teacher_only, name="dispatch")
+class MySubjectEditView(LoginRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
+        subject = get_object_or_404(Subject, pk=kwargs["pk"])
+        form = SubjectForm(instance=subject, data=request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Предмет изменен!")
+
+        return redirect(reverse("my-subject", kwargs=kwargs))
+
+    def get(self, request, *args, **kwargs):
+        subject = get_object_or_404(Subject, pk=kwargs["pk"])
+        form = SubjectForm(instance=subject)
+        return render(request, "study/teacher/edit-subject.html", {"form": form, "subject": subject})
+

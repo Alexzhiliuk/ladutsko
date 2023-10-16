@@ -48,4 +48,7 @@ urlpatterns = [
     path("teacher/my-group/", views.MyGroupListView.as_view(), name="my-group"),
     path("teacher/my-group/create/", views.MyGroupCreateView.as_view(), name="my-group-create"),
     path("teacher/my-group/exclude/<int:pk>/", views.exclude_student, name="my-group-exclude-student"),
+    path("teacher/my-subjects/", views.MySubjectsListView.as_view(), name="my-subjects"),
+    path("teacher/my-subjects/create/", views.MySubjectCreateView.as_view(), name="my-subject-create"),
+    path("teacher/my-subject/<int:pk>/", views.MySubjectEditView.as_view(), name="my-subject"),
 ]
