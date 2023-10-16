@@ -44,4 +44,8 @@ urlpatterns = [
     path("question/<int:pk>/add-answer-variant/", views.add_answer_variant, name="add-answer-variant"),
     path("question/<int:pk>/add-correct-text-answer/", views.add_correct_text_answer, name="add-correct-text-answer"),
     path("answer/delete/<int:pk>/", views.delete_answer, name="answer-delete"),
+
+    path("teacher/my-group/", views.MyGroupListView.as_view(), name="my-group"),
+    path("teacher/my-group/create/", views.MyGroupCreateView.as_view(), name="my-group-create"),
+    path("teacher/my-group/exclude/<int:pk>/", views.exclude_student, name="my-group-exclude-student"),
 ]

@@ -1,4 +1,5 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
+from django.urls import reverse
 from django.views import View
 from django.http import HttpResponse
 from .forms import LoginForm, ApplicationForm
@@ -23,7 +24,7 @@ class LoginView(View):
                 return render(request, "accounts/login.html", {"form": form})
 
             login(request, user)
-            return HttpResponse("Welcome! Authenticated successfully")
+            return redirect(reverse("index"))
 
         return render(request, "accounts/login.html", {"form": form})
 

@@ -8,6 +8,7 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 from django.utils.decorators import method_decorator
 from .decorators.is_admin import admin_only
+from .decorators.is_teacher import teacher_only
 from accounts.forms import UserEditForm, UserCreateForm
 from accounts.models import Application
 from .forms import AdminProfileEditForm, GroupForm, SubjectForm, LessonForm, AdminTestForm, QuestionForm, AnswerForm
@@ -29,6 +30,12 @@ class IndexView(LoginRequiredMixin, View):
             "Предметы": reverse_lazy("subjects"),
             "Уроки": reverse_lazy("lessons"),
             "Тесты": reverse_lazy("tests"),
+        },
+        "teacher": {
+            "Моя группа": reverse_lazy("my-group"),
+            "Предметы": "#",
+            "Уроки": "#",
+            "Тесты": "#",
         }
     }
 
@@ -37,6 +44,8 @@ class IndexView(LoginRequiredMixin, View):
         user = request.user
         if user.profile.type == 1:
             return render(request, "study/index.html", {"menu": self.menu["admin"]})
+        if user.profile.type == 2:
+            return render(request, "study/index.html", {"menu": self.menu["teacher"]})
 
 
 @method_decorator(admin_only, name="dispatch")
@@ -680,3 +689,43 @@ def delete_answer(request, pk):
     messages.success(request, f"Ответ {name} удален!")
 
     return HttpResponse("Answer delete successfully!")
+
+
+@method_decorator(teacher_only, name="dispatch")
+class MyGroupListView(LoginRequiredMixin, ListView):
+    model = User
+    context_object_name = "objects"
+    template_name = "study/teacher/my_group.html"
+
+    def get_queryset(self):
+        group = self.request.user.study_groups.first()
+        if group:
+            students = group.students.all()
+            return students
+        return []
+
+
+@method_decorator(teacher_only, name="dispatch")
+class MyGroupCreateView(LoginRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
+        form = GroupForm(request.POST)
+        if form.is_valid():
+            new_group = form.save(commit=False)
+            new_group.owner = request.user
+            new_group.save()
+            messages.success(request, "Ваша группа создана!")
+            return redirect(reverse("my-group"))
+
+        return redirect(reverse("my-group-create"))
+
+    def get(self, request, *args, **kwargs):
+        form = GroupForm()
+        return render(request, "study/teacher/create-group.html", {"form": form})
+
+
+def exclude_student(request, pk):
+    student = get_object_or_404(User, pk=pk)
+    group = request.user.study_groups.first()
+    group.students.remove(student)
+    messages.success(request, "Ученик был исключен")
+    return redirect(reverse("my-group"))
