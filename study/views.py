@@ -520,7 +520,7 @@ class LessonCreateView(LoginRequiredMixin, View):
         })
 
 
-@admin_only
+@not_student
 def delete_lesson(request, pk):
 
     lesson = get_object_or_404(Lesson, pk=pk)
@@ -794,3 +794,54 @@ class MyLessonsListView(LoginRequiredMixin, ListView):
             else:
                 objects[subject] = [lesson]
         return objects
+
+
+@method_decorator(teacher_only, name="dispatch")
+class MyLessonCreateView(LoginRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
+        form = LessonForm(data=request.POST, files=request.FILES)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Урок создан")
+
+        return redirect(reverse("my-lessons"))
+
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        form = LessonForm()
+        tests = user.tests.all()
+        photos = user.lesson_photos.all()
+        subjects = user.study_groups.first().subjects.all()
+        return render(request, "study/teacher/create-lesson.html", {
+            "form": form,
+            "tests": tests,
+            "photos": photos,
+            "subjects": subjects,
+        })
+
+
+@method_decorator(teacher_only, name="dispatch")
+class MyLessonEditView(LoginRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
+        lesson = get_object_or_404(Lesson, pk=kwargs["pk"])
+        form = LessonForm(instance=lesson, data=request.POST, files=request.FILES)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Урок изменен")
+
+        return redirect(reverse("my-lesson", kwargs=kwargs))
+
+    def get(self, request, *args, **kwargs):
+        lesson = get_object_or_404(Lesson, pk=kwargs["pk"])
+        user = request.user
+        form = LessonForm(instance=lesson)
+        tests = user.tests.all()
+        photos = user.lesson_photos.all()
+        subjects = user.study_groups.first().subjects.all()
+        return render(request, "study/teacher/edit-lesson.html", {
+            "form": form,
+            "tests": tests,
+            "photos": photos,
+            "subjects": subjects,
+            "lesson": lesson,
+        })
