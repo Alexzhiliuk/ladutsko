@@ -51,4 +51,5 @@ urlpatterns = [
     path("teacher/my-subjects/", views.MySubjectsListView.as_view(), name="my-subjects"),
     path("teacher/my-subjects/create/", views.MySubjectCreateView.as_view(), name="my-subject-create"),
     path("teacher/my-subject/<int:pk>/", views.MySubjectEditView.as_view(), name="my-subject"),
+    path("teacher/my-lessons/", views.MyLessonsListView.as_view(), name="my-lessons"),
 ]

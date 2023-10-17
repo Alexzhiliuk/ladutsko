@@ -35,7 +35,7 @@ class IndexView(LoginRequiredMixin, View):
         "teacher": {
             "Моя группа": reverse_lazy("my-group"),
             "Предметы": reverse_lazy("my-subjects"),
-            "Уроки": "#",
+            "Уроки": reverse_lazy("my-lessons"),
             "Тесты": "#",
         }
     }
@@ -777,3 +777,20 @@ class MySubjectEditView(LoginRequiredMixin, View):
         form = SubjectForm(instance=subject)
         return render(request, "study/teacher/edit-subject.html", {"form": form, "subject": subject})
 
+
+@method_decorator(teacher_only, name="dispatch")
+class MyLessonsListView(LoginRequiredMixin, ListView):
+    model = Lesson
+    context_object_name = "objects"
+    template_name = "study/teacher/my_lessons.html"
+
+    def get_queryset(self):
+        qs = super().get_queryset().filter(subject__group__owner=self.request.user)
+        objects = {}
+        for lesson in qs:
+            subject = lesson.subject
+            if subject in objects:
+                objects[subject].append(lesson)
+            else:
+                objects[subject] = [lesson]
+        return objects
