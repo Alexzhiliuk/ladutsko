@@ -19,6 +19,7 @@
             <label for="{{ form.name.id_for_label }}" class="form__label">{{ form.name.label }}</label>
             {{ form.name }}
         </div>
+        {% if user.profile.type == 1 %}
         <div class="form__item">
             <label for="{{ form.owner.id_for_label }}" class="form__label">{{ form.owner.label }}</label>
             <div class="form__input select" role="close">
@@ -36,6 +37,9 @@
                 {{ form.owner }}
             </div>
         </div>
+        {% else %}
+        {{ form.owner.as_hidden }}
+        {% endif %}
 
         <div class="form__item">
             <button type="submit" class="btn">Сохранить</button>

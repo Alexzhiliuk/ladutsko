@@ -59,5 +59,5 @@ urlpatterns = [
     path("teacher/my-photos/", views.MyPhotosView.as_view(), name="my-photos"),
     path("teacher/my-photos/create/", views.MyPhotoCreateView.as_view(), name="my-photo-create"),
     path("teacher/my-photo/<int:pk>/", views.MyPhotoEditView.as_view(), name="my-photo"),
-    # path("teacher/my-tests/", views.MyTestsListView.as_view(), name="my-tests"),
+    path("teacher/my-tests/", views.MyTestsListView.as_view(), name="my-tests"),
 ]

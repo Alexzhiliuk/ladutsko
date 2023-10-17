@@ -533,14 +533,14 @@ def delete_lesson(request, pk):
     return redirect(reverse("lessons"))
 
 
-@method_decorator(admin_only, name="dispatch")
+@method_decorator(not_student, name="dispatch")
 class TestsListView(LoginRequiredMixin, ListView):
     model = Test
     context_object_name = "objects"
     template_name = "study/test/list.html"
 
 
-@method_decorator(admin_only, name="dispatch")
+@method_decorator(not_student, name="dispatch")
 class TestEditView(LoginRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
         test = get_object_or_404(Test, pk=pk)
@@ -562,13 +562,19 @@ class TestEditView(LoginRequiredMixin, View):
         })
 
 
-@method_decorator(admin_only, name="dispatch")
+@method_decorator(not_student, name="dispatch")
 class TestCreateView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         form = AdminTestForm(request.POST)
         if form.is_valid():
             form.save()
             messages.success(request, "Тест создан!")
+        elif request.user.profile.type == 2:
+            name = request.POST.get("name")
+            Test.objects.create(owner=request.user, name=name)
+            messages.success(request, "Тест создан!")
+            return redirect(reverse("my-tests"))
+
         return redirect(reverse("tests"))
 
     def get(self, request, *args, **kwargs):
@@ -581,18 +587,19 @@ class TestCreateView(LoginRequiredMixin, View):
         })
 
 
-@admin_only
+@not_student
 def delete_test(request, pk):
 
     test = get_object_or_404(Test, pk=pk)
     name = test.name
     test.delete()
     messages.success(request, f"Тест {name} удален!")
+    if request.user.profile.type == 1:
+        return redirect(reverse("tests"))
+    return redirect(reverse("my-tests"))
 
-    return redirect(reverse("tests"))
 
-
-@method_decorator(admin_only, name="dispatch")
+@method_decorator(not_student, name="dispatch")
 class TestQuestionCreateView(LoginRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
         form = QuestionForm(request.POST)
@@ -612,7 +619,7 @@ class TestQuestionCreateView(LoginRequiredMixin, View):
         })
 
 
-@admin_only
+@not_student
 def delete_question(request, test_pk, question_pk):
 
     question = get_object_or_404(Question, pk=question_pk)
@@ -623,7 +630,7 @@ def delete_question(request, test_pk, question_pk):
     return redirect(reverse("test", kwargs={"pk": test_pk}))
 
 
-@method_decorator(admin_only, name="dispatch")
+@method_decorator(not_student, name="dispatch")
 class TestQuestionEditView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         question = get_object_or_404(Question, pk=kwargs["question_pk"])
@@ -645,7 +652,7 @@ class TestQuestionEditView(LoginRequiredMixin, View):
         })
 
 
-@admin_only
+@not_student
 def add_answer_variant(request, pk):
     if request.method == "POST":
         question = get_object_or_404(Question, pk=pk)
@@ -661,7 +668,7 @@ def add_answer_variant(request, pk):
         return redirect(reverse("tests"))
 
 
-@admin_only
+@not_student
 def add_correct_text_answer(request, pk):
     if request.method == "POST":
         question = get_object_or_404(Question, pk=pk)
@@ -683,7 +690,7 @@ def add_correct_text_answer(request, pk):
         return redirect(reverse("tests"))
 
 
-@admin_only
+@not_student
 def delete_answer(request, pk):
 
     answer = get_object_or_404(Answer, pk=pk)
@@ -905,3 +912,11 @@ def delete_photo(request, pk):
     messages.success(request, f"Фото {name} удалено")
     return HttpResponse("Ok")
 
+
+class MyTestsListView(TestsListView):
+    model = Test
+    context_object_name = "objects"
+    template_name = "study/test/list.html"
+
+    def get_queryset(self):
+        return super().get_queryset().filter(owner=self.request.user)
