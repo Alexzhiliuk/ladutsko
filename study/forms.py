@@ -54,14 +54,16 @@ class SubjectForm(forms.ModelForm):
 class LessonForm(forms.ModelForm):
     class Meta:
         model = Lesson
-        fields = ("name", "subject", "test", "video", "photos")
-        labels = {"name": "Название", "subject": "Предмет", "test": "Тест", "video": "Видео", "photos": "Фото"}
+        fields = ("name", "subject", "test", "video", "photos", "text")
+        labels = {"name": "Название", "subject": "Предмет", "test": "Тест", "video": "Видео", "photos": "Фото", "text": "Текст"}
 
     def __init__(self, *args, **kwargs):
         super(LessonForm, self).__init__(*args, **kwargs)
 
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form__input'
+
+        self.fields["text"].widget.attrs['class'] = 'form__input full-w'
 
 
 class TestForm(forms.ModelForm):
