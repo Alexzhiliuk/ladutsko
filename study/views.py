@@ -12,7 +12,8 @@ from .decorators.is_teacher import teacher_only
 from .decorators.is_not_student import not_student
 from accounts.forms import UserEditForm, UserCreateForm
 from accounts.models import Application
-from .forms import AdminProfileEditForm, GroupForm, SubjectForm, LessonForm, AdminTestForm, QuestionForm, AnswerForm
+from .forms import AdminProfileEditForm, GroupForm, SubjectForm, LessonForm, \
+    AdminTestForm, QuestionForm, AnswerForm, LessonPhotoForm
 from .models import Group, Subject, Lesson, LessonPhoto, Test, Question, Answer
 from django.shortcuts import get_object_or_404
 from django.core.mail import send_mail
@@ -36,7 +37,8 @@ class IndexView(LoginRequiredMixin, View):
             "Моя группа": reverse_lazy("my-group"),
             "Предметы": reverse_lazy("my-subjects"),
             "Уроки": reverse_lazy("my-lessons"),
-            "Тесты": "#",
+            "Фото": reverse_lazy("my-photos"),
+            "Тесты": reverse_lazy("my-tests"),
         }
     }
 
@@ -845,3 +847,61 @@ class MyLessonEditView(LoginRequiredMixin, View):
             "subjects": subjects,
             "lesson": lesson,
         })
+
+
+@method_decorator(teacher_only, name="dispatch")
+class MyPhotosView(LoginRequiredMixin, ListView):
+    model = LessonPhoto
+    context_object_name = "objects"
+    template_name = "study/teacher/my_photos.html"
+
+    def get_queryset(self):
+        return super().get_queryset().filter(owner=self.request.user)
+
+
+@method_decorator(teacher_only, name="dispatch")
+class MyPhotoCreateView(LoginRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
+        form = LessonPhotoForm(data=request.POST, files=request.FILES)
+        if form.is_valid():
+            new_photo = form.save(commit=False)
+            new_photo.owner = request.user
+            new_photo.save()
+            messages.success(request, "Фото создано")
+
+        return redirect(reverse("my-photos"))
+
+    def get(self, request, *args, **kwargs):
+        form = LessonPhotoForm()
+        return render(request, "study/teacher/create-photo.html", {
+            "form": form,
+        })
+
+
+@method_decorator(teacher_only, name="dispatch")
+class MyPhotoEditView(LoginRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
+        photo = get_object_or_404(LessonPhoto, pk=kwargs["pk"])
+        form = LessonPhotoForm(instance=photo, data=request.POST, files=request.FILES)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Фото изменено")
+
+        return redirect(reverse("my-photo", kwargs=kwargs))
+
+    def get(self, request, *args, **kwargs):
+        photo = get_object_or_404(LessonPhoto, pk=kwargs["pk"])
+        form = LessonPhotoForm(instance=photo)
+        return render(request, "study/teacher/edit-photo.html", {
+            "form": form,
+            "photo": photo
+        })
+
+
+def delete_photo(request, pk):
+    photo = get_object_or_404(LessonPhoto, pk=pk)
+    name = photo.name
+    photo.delete()
+    messages.success(request, f"Фото {name} удалено")
+    return HttpResponse("Ok")
+

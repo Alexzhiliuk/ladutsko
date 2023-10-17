@@ -33,6 +33,8 @@ urlpatterns = [
     path("lesson/delete/<int:pk>/", views.delete_lesson, name="lesson-delete"),
     path("lesson/add/", views.LessonCreateView.as_view(), name="lesson-add"),
 
+    path("photo/delete/<int:pk>/", views.delete_photo, name="photo-delete"),
+
     path("tests/", views.TestsListView.as_view(), name="tests"),
     path("test/<int:pk>/", views.TestEditView.as_view(), name="test"),
     path("test/delete/<int:pk>/", views.delete_test, name="test-delete"),
@@ -54,4 +56,8 @@ urlpatterns = [
     path("teacher/my-lessons/", views.MyLessonsListView.as_view(), name="my-lessons"),
     path("teacher/my-lessons/create/", views.MyLessonCreateView.as_view(), name="my-lesson-create"),
     path("teacher/my-lesson/<int:pk>/", views.MyLessonEditView.as_view(), name="my-lesson"),
+    path("teacher/my-photos/", views.MyPhotosView.as_view(), name="my-photos"),
+    path("teacher/my-photos/create/", views.MyPhotoCreateView.as_view(), name="my-photo-create"),
+    path("teacher/my-photo/<int:pk>/", views.MyPhotoEditView.as_view(), name="my-photo"),
+    # path("teacher/my-tests/", views.MyTestsListView.as_view(), name="my-tests"),
 ]
