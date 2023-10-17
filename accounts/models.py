@@ -13,7 +13,6 @@ class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     middle_name = models.CharField("Отчество", max_length=32, null=True, blank=True)
     type = models.IntegerField("Тип", choices=Type.choices, null=True)
-    # group = models.ForeignKey(Group)
 
     class Meta:
         verbose_name = "Профиль"
