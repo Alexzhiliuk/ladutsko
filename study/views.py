@@ -474,7 +474,7 @@ class LessonsListView(LoginRequiredMixin, ListView):
 class LessonEditView(LoginRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
         lesson = get_object_or_404(Lesson, pk=pk)
-        form = LessonForm(instance=lesson, data=request.POST)
+        form = LessonForm(instance=lesson, data=request.POST, files=request.FILES)
         if form.is_valid():
             form.save()
             messages.success(request, "Урок изменен!")
@@ -499,7 +499,7 @@ class LessonEditView(LoginRequiredMixin, View):
 @method_decorator(admin_only, name="dispatch")
 class LessonCreateView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
-        form = LessonForm(request.POST)
+        form = LessonForm(data=request.POST, files=request.FILES)
         if form.is_valid():
             form.save()
             messages.success(request, "Урок создан!")
