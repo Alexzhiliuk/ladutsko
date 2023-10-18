@@ -1,23 +1,24 @@
+from django.conf import settings
+from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.models import User
+from django.core.mail import send_mail
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
 from django.shortcuts import redirect, render
 from django.urls import reverse, reverse_lazy
-from django.views import View
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic import ListView
-from django.http import HttpResponse
-from django.contrib import messages
-from django.contrib.auth.models import User
 from django.utils.decorators import method_decorator
-from .decorators.is_admin import admin_only
-from .decorators.is_teacher import teacher_only
-from .decorators.is_not_student import not_student
+from django.views import View
+from django.views.generic import ListView
+
 from accounts.forms import UserEditForm, UserCreateForm
 from accounts.models import Application
+from .decorators.is_admin import admin_only
+from .decorators.is_not_student import not_student
+from .decorators.is_teacher import teacher_only
 from .forms import AdminProfileEditForm, GroupForm, SubjectForm, LessonForm, \
     AdminTestForm, QuestionForm, AnswerForm, LessonPhotoForm
-from .models import Group, Subject, Lesson, LessonPhoto, Test, Question, Answer
-from django.shortcuts import get_object_or_404
-from django.core.mail import send_mail
-from django.conf import settings
+from .models import Group, Subject, Lesson, LessonPhoto, Test, Question, Answer, Try
 
 
 class IndexView(LoginRequiredMixin, View):
@@ -49,6 +50,14 @@ class IndexView(LoginRequiredMixin, View):
             return render(request, "study/index.html", {"menu": self.menu["admin"]})
         if user.profile.type == 2:
             return render(request, "study/index.html", {"menu": self.menu["teacher"]})
+        if user.profile.type == 3:
+            return render(
+                request,
+                "study/index.html",
+                {
+                    "menu": {subject.name: reverse_lazy("student-subject", kwargs={"pk": subject.pk}) for subject in Subject.objects.filter(group=user.group_set.first())}
+                }
+            )
 
 
 @method_decorator(admin_only, name="dispatch")
@@ -920,3 +929,66 @@ class MyTestsListView(TestsListView):
 
     def get_queryset(self):
         return super().get_queryset().filter(owner=self.request.user)
+
+
+class StudentSubjectView(LoginRequiredMixin, View):
+
+    def get(self, request, *args, **kwargs):
+        user = self.request.user
+        subject = get_object_or_404(Subject, pk=kwargs["pk"])
+
+        if not user.group_set.first():
+            return HttpResponse("No permission")
+        if user.group_set.first().pk != subject.group.pk:
+            return HttpResponse("No permission")
+
+        return render(request, "study/student/subject.html", {
+            "subject": subject,
+            "lessons": subject.lessons.all()
+        })
+
+
+class StudentLessonView(LoginRequiredMixin, View):
+
+    def get(self, request, *args, **kwargs):
+        user = self.request.user
+        lesson = get_object_or_404(Lesson, pk=kwargs["pk"])
+
+        if not user.group_set.first():
+            return HttpResponse("No permission")
+        if user.group_set.first().pk != lesson.subject.group.pk:
+            return HttpResponse("No permission")
+
+        return render(request, "study/student/lesson.html", {
+            "lesson": lesson,
+        })
+
+
+class StudentTestView(LoginRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
+        user = self.request.user
+        test = get_object_or_404(Test, pk=kwargs["pk"])
+
+        if not user.group_set.first():
+            return HttpResponse("No permission")
+        if user.group_set.first().owner != test.owner:
+            return HttpResponse("No permission")
+
+        score = test.calculate_score(request.POST)
+        Try.objects.create(user=user, test=test, score=score)
+        messages.success(request, f"Ваш балл составил {score}")
+
+        return redirect(reverse("student-lesson", kwargs={"pk": test.lessons.first().pk}))
+
+    def get(self, request, *args, **kwargs):
+        user = self.request.user
+        test = get_object_or_404(Test, pk=kwargs["pk"])
+
+        if not user.group_set.first():
+            return HttpResponse("No permission")
+        if user.group_set.first().owner != test.owner:
+            return HttpResponse("No permission")
+
+        return render(request, "study/student/test.html", {
+            "test": test,
+        })

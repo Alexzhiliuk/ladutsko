@@ -51,6 +51,29 @@ class Test(models.Model):
     def __str__(self):
         return f"{self.name}: {self.owner}"
 
+    def get_question_score(self):
+        return 100 / self.questions.count()
+
+    def calculate_score(self, data):
+        question_score = self.get_question_score()  # максимальный балл за вопрос
+        try_score = 0  # итоговый балл
+        for question in self.questions.all():
+            if question.type == 2:
+                answers = {}
+                for answer in question.answers.all():
+                    answers[answer.pk] = answer.correct
+                correct_choices = 0  # количетсво совпадений
+                for ans_pk, is_correct in answers.items():
+                    if is_correct and data.get(str(ans_pk)) or not is_correct and not data.get(str(ans_pk)):
+                        correct_choices += 1
+                try_score += question_score * (correct_choices / len(answers))
+            elif question.type == 1:
+                answer = question.answers.first()
+                if data.get(str(answer.pk)).lower().strip() == answer.text.lower().strip():
+                    try_score += question_score
+
+        return try_score
+
 
 class Question(models.Model):
 
@@ -98,6 +121,12 @@ class Lesson(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.subject})"
+
+    def get_test_best_try(self):
+        tries = [try_.score for try_ in Try.objects.filter(test=self.test)]
+        if tries:
+            return max(tries)
+        return 0
 
 
 class Try(models.Model):
