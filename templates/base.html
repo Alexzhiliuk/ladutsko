@@ -31,6 +31,7 @@
 				{% if user.profile.type == 1 %}
 				<li><a href="{% url 'teachers' %}">Учителя</a></li>
 				<li><a href="{% url 'students' %}">Ученики</a></li>
+				<li><a href="{% url 'applications' %}">Заявки</a></li>
 				<li><a href="{% url 'groups' %}">Группы</a></li>
 				<li><a href="{% url 'subjects' %}">Предметы</a></li>
 				<li><a href="{% url 'lessons' %}">Уроки</a></li>
@@ -42,6 +43,7 @@
 				<li><a href="{% url 'my-photos' %}">Фото</a></li>
 				<li><a href="{% url 'my-tests' %}">Тесты</a></li>
 				{% endif %}
+				<li class="header-menu-profile"><a href="{% url 'profile' %}">{{ user.username }}</a></li>
 				{% endif%}
 			</ul>
 		</div>

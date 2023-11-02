@@ -2,9 +2,11 @@ from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.views import View
 from django.http import HttpResponse
-from .forms import LoginForm, ApplicationForm
+from django.contrib.auth.mixins import LoginRequiredMixin
+from .forms import LoginForm, ApplicationForm, UserEditForm, ProfileEditForm
 from django.contrib.auth import authenticate, login
 from django.contrib import messages
+from django.db.utils import IntegrityError
 
 
 class LoginView(View):
@@ -46,3 +48,32 @@ class ApplicationView(View):
     def get(self, request, *args, **kwargs):
         form = ApplicationForm()
         return render(request, "accounts/application.html", {"form": form})
+
+
+class ProfileView(LoginRequiredMixin, View):
+
+    def post(self, request, *args, **kwargs):
+        user = request.user
+        user_form = UserEditForm(instance=user, data=request.POST)
+        profile_form = ProfileEditForm(instance=user.profile, data=request.POST)
+        if user_form.is_valid() and profile_form.is_valid():
+            try:
+                user = user_form.save(commit=False)
+                user.username = user.email
+                user.save()
+            except IntegrityError:
+                messages.error(request, "Такой email уже существует")
+                return redirect(reverse("profile"))
+
+            profile_form.save()
+            messages.success(request, "Профиль успешно изменен")
+            return redirect(reverse("profile"))
+
+        messages.success(request, "Форма заполнена некорректно")
+        return redirect(reverse("profile"))
+
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        user_form = UserEditForm(instance=user)
+        profile_form = ProfileEditForm(instance=user.profile)
+        return render(request, "accounts/profile.html", {"user_form": user_form, "profile_form": profile_form})

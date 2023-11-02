@@ -6,6 +6,7 @@ ul {
     display: flex;
     align-items: center;
     gap: 25px;
+    width: 100%;
 }
 
 .header-menu a {
@@ -14,4 +15,9 @@ ul {
     color: white;
 
 }
+
+.header-menu-profile {
+    margin-left: auto;
+}
+
 
