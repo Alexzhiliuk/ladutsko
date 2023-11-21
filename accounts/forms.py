@@ -18,8 +18,8 @@ class ApplicationForm(forms.ModelForm):
 
     class Meta:
         model = Application
-        fields = ("first_name", "last_name", "middle_name", "group_id")
-        labels = {"first_name": "Имя", "last_name": "Фамилия", "middle_name": "Отчество", "group_id": "Группа"}
+        fields = ("email", "first_name", "last_name", "middle_name", "group_id")
+        labels = {"email": "Email", "first_name": "Имя", "last_name": "Фамилия", "middle_name": "Отчество", "group_id": "Группа"}
 
     def __init__(self, *args, **kwargs):
         super(ApplicationForm, self).__init__(*args, **kwargs)

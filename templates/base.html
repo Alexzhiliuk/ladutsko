@@ -43,7 +43,9 @@
 				<li><a href="{% url 'my-photos' %}">Фото</a></li>
 				<li><a href="{% url 'my-tests' %}">Тесты</a></li>
 				{% endif %}
-				<li class="header-menu-profile"><a href="{% url 'profile' %}">{{ user.username }}</a></li>
+				<li class="header-menu-profile">
+					<a href="{% url 'profile' %}">{{ user.username }}</a> | <a href="{% url 'logout' %}">выйти</a>
+				</li>
 				{% endif%}
 			</ul>
 		</div>
