@@ -5,7 +5,13 @@
 
 {% block content %}
 <section class="section-admin">
-    <h1 class="h1">Админ панель</h1>
+    <h1 class="h1">
+        {% if user.profile.type == 3 %}
+        Предметы
+        {% else %}
+        Админ панель
+        {% endif %}
+    </h1>
     <div class="menu mt-40">
 <!--        <div class="details">-->
 <!--            <div class="menu__item details__summary" role="close">Пользователи</div>-->

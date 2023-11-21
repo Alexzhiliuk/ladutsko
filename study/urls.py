@@ -60,4 +60,9 @@ urlpatterns = [
     path("teacher/my-photos/create/", views.MyPhotoCreateView.as_view(), name="my-photo-create"),
     path("teacher/my-photo/<int:pk>/", views.MyPhotoEditView.as_view(), name="my-photo"),
     path("teacher/my-tests/", views.MyTestsListView.as_view(), name="my-tests"),
+
+    path("student/subject/<int:pk>/", views.StudentSubjectView.as_view(), name="student-subject"),
+    path("student/lesson/<int:pk>/", views.StudentLessonView.as_view(), name="student-lesson"),
+    path("student/test/<int:pk>/", views.StudentTestView.as_view(), name="student-test"),
+
 ]
