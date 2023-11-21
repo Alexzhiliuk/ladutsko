@@ -10,8 +10,8 @@ from django.utils.decorators import method_decorator
 from .decorators.is_admin import admin_only
 from accounts.forms import UserEditForm, UserCreateForm
 from accounts.models import Application
-from .forms import AdminProfileEditForm
-from .models import Group
+from .forms import AdminProfileEditForm, GroupForm, SubjectForm, LessonForm, AdminTestForm, QuestionForm, AnswerForm
+from .models import Group, Subject, Lesson, LessonPhoto, Test, Question, Answer
 from django.shortcuts import get_object_or_404
 from django.core.mail import send_mail
 from django.conf import settings
@@ -25,11 +25,10 @@ class IndexView(LoginRequiredMixin, View):
                 "Ученики": reverse_lazy("students"),
             },
             "Заявки": reverse_lazy("applications"),
-            "Группы": "#",
-            "Предметы": "#",
-            "Уроки": "#",
-            "Тесты": "#",
-            "Вопросы": "#",
+            "Группы": reverse_lazy("groups"),
+            "Предметы": reverse_lazy("subjects"),
+            "Уроки": reverse_lazy("lessons"),
+            "Тесты": reverse_lazy("tests"),
         }
     }
 
@@ -319,3 +318,365 @@ def delete_application(request, pk):
     messages.success(request, f"Заявка от {email} удален!")
 
     return redirect(reverse("applications"))
+
+
+@method_decorator(admin_only, name="dispatch")
+class GroupsListView(LoginRequiredMixin, ListView):
+    model = Group
+    context_object_name = "objects"
+    template_name = "study/group/list.html"
+
+
+@method_decorator(admin_only, name="dispatch")
+class GroupEditView(LoginRequiredMixin, View):
+    def post(self, request, pk, *args, **kwargs):
+        group = get_object_or_404(Group, pk=pk)
+        form = GroupForm(instance=group, data=request.POST)
+        if form.is_valid():
+            new_owner = form.cleaned_data.get("owner")
+
+            if new_owner == group.owner:
+                form.save()
+            elif new_owner:
+                if not (new_owner.study_groups.first()):
+                    group = form.save(commit=False)
+                    group.owner = new_owner
+                    group.save()
+                else:
+                    form.save()
+                    messages.error(
+                        request,
+                        f"Учитель {new_owner} уже является владельцем группы {new_owner.study_groups.first()}"
+                    )
+            else:
+                group = form.save(commit=False)
+                group.owner = None
+                group.save()
+
+            messages.success(request, "Группа успешно изменена!")
+        return redirect(reverse("group", kwargs={"pk": pk}))
+
+    def get(self, request, pk, *args, **kwargs):
+        group = get_object_or_404(Group, pk=pk)
+        form = GroupForm(instance=group)
+        teachers = User.objects.filter(profile__type=2)
+
+        return render(request, "study/group/edit.html", {"form": form, "group": group, "teachers": teachers})
+
+
+@method_decorator(admin_only, name="dispatch")
+class GroupCreateView(LoginRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
+        form = GroupForm(request.POST)
+        if form.is_valid():
+            owner = form.cleaned_data.get("owner")
+            if owner:
+                if owner.study_groups.first():
+                    messages.error(request, f"Учитель {owner} уже владеет группой {owner.study_groups.first()}!")
+                    return redirect(reverse("group-add"))
+                new_group = form.save(commit=False)
+                new_group.owner = owner
+                new_group.save()
+            else:
+                form.save()
+
+            messages.success(request, "Группа успешно создана!")
+
+        return redirect(reverse("groups"))
+
+    def get(self, request, *args, **kwargs):
+        form = GroupForm()
+        teachers = User.objects.filter(profile__type=2)
+        return render(request, "study/group/add.html", {"form": form, "teachers": teachers})
+
+
+@admin_only
+def delete_group(request, pk):
+
+    group = get_object_or_404(Group, pk=pk)
+    name = group.name
+    group.delete()
+    messages.success(request, f"Группа {name} удалена!")
+
+    return redirect(reverse("groups"))
+
+
+@method_decorator(admin_only, name="dispatch")
+class SubjectsListView(LoginRequiredMixin, ListView):
+    model = Subject
+    context_object_name = "objects"
+    template_name = "study/subjects/list.html"
+
+
+@method_decorator(admin_only, name="dispatch")
+class SubjectEditView(LoginRequiredMixin, View):
+    def post(self, request, pk, *args, **kwargs):
+        subject = get_object_or_404(Subject, pk=pk)
+        form = SubjectForm(instance=subject, data=request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Предмет успешно изменен")
+
+        return redirect(reverse("subject", kwargs={"pk": pk}))
+
+    def get(self, request, pk, *args, **kwargs):
+        subject = get_object_or_404(Subject, pk=pk)
+        form = SubjectForm(instance=subject)
+        groups = Group.objects.all()
+        return render(request, "study/subjects/edit.html", {"form": form, "subject": subject, "groups": groups})
+
+
+@method_decorator(admin_only, name="dispatch")
+class SubjectCreateView(LoginRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
+        form = SubjectForm(data=request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Предмет успешно создан")
+
+        return redirect(reverse("subjects"))
+
+    def get(self, request, *args, **kwargs):
+        form = SubjectForm()
+        groups = Group.objects.all()
+        return render(request, "study/subjects/add.html", {"form": form, "groups": groups})
+
+
+@admin_only
+def delete_subject(request, pk):
+
+    subject = get_object_or_404(Subject, pk=pk)
+    name = subject.name
+    subject.delete()
+    messages.success(request, f"Предмет {name} удален!")
+
+    return redirect(reverse("subjects"))
+
+
+@method_decorator(admin_only, name="dispatch")
+class LessonsListView(LoginRequiredMixin, ListView):
+    model = Lesson
+    context_object_name = "objects"
+    template_name = "study/lesson/list.html"
+
+
+@method_decorator(admin_only, name="dispatch")
+class LessonEditView(LoginRequiredMixin, View):
+    def post(self, request, pk, *args, **kwargs):
+        lesson = get_object_or_404(Lesson, pk=pk)
+        form = LessonForm(instance=lesson, data=request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Урок изменен!")
+        return redirect(reverse("lesson", kwargs={"pk": pk}))
+
+    def get(self, request, pk, *args, **kwargs):
+        lesson = get_object_or_404(Lesson, pk=pk)
+        form = LessonForm(instance=lesson)
+        subjects = Subject.objects.all()
+        tests = Test.objects.all()
+        photos = LessonPhoto.objects.filter(owner=lesson.subject.group.owner)
+
+        return render(request, "study/lesson/edit.html", {
+            "form": form,
+            "lesson": lesson,
+            "subjects": subjects,
+            "tests": tests,
+            "photos": photos
+        })
+
+
+@method_decorator(admin_only, name="dispatch")
+class LessonCreateView(LoginRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
+        form = LessonForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Урок создан!")
+        return redirect(reverse("lessons"))
+
+    def get(self, request, *args, **kwargs):
+
+        form = LessonForm()
+        subjects = Subject.objects.all()
+        tests = Test.objects.all()
+        photos = LessonPhoto.objects.all()
+
+        return render(request, "study/lesson/add.html", {
+            "form": form,
+            "subjects": subjects,
+            "tests": tests,
+            "photos": photos
+        })
+
+
+@admin_only
+def delete_lesson(request, pk):
+
+    lesson = get_object_or_404(Lesson, pk=pk)
+    name = lesson.name
+    lesson.delete()
+    messages.success(request, f"Урок {name} удален!")
+
+    return redirect(reverse("lessons"))
+
+
+@method_decorator(admin_only, name="dispatch")
+class TestsListView(LoginRequiredMixin, ListView):
+    model = Test
+    context_object_name = "objects"
+    template_name = "study/test/list.html"
+
+
+@method_decorator(admin_only, name="dispatch")
+class TestEditView(LoginRequiredMixin, View):
+    def post(self, request, pk, *args, **kwargs):
+        test = get_object_or_404(Test, pk=pk)
+        form = AdminTestForm(instance=test, data=request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Тест изменен!")
+        return redirect(reverse("test", kwargs={"pk": pk}))
+
+    def get(self, request, pk, *args, **kwargs):
+        test = get_object_or_404(Test, pk=pk)
+        form = AdminTestForm(instance=test)
+        teachers = User.objects.filter(profile__type=2)
+
+        return render(request, "study/test/edit.html", {
+            "form": form,
+            "test": test,
+            "teachers": teachers,
+        })
+
+
+@method_decorator(admin_only, name="dispatch")
+class TestCreateView(LoginRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
+        form = AdminTestForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Тест создан!")
+        return redirect(reverse("tests"))
+
+    def get(self, request, *args, **kwargs):
+        form = AdminTestForm()
+        teachers = User.objects.filter(profile__type=2)
+
+        return render(request, "study/test/add.html", {
+            "form": form,
+            "teachers": teachers,
+        })
+
+
+@admin_only
+def delete_test(request, pk):
+
+    test = get_object_or_404(Test, pk=pk)
+    name = test.name
+    test.delete()
+    messages.success(request, f"Тест {name} удален!")
+
+    return redirect(reverse("tests"))
+
+
+@method_decorator(admin_only, name="dispatch")
+class TestQuestionCreateView(LoginRequiredMixin, View):
+    def post(self, request, pk, *args, **kwargs):
+        form = QuestionForm(request.POST)
+        if form.is_valid():
+            new_question = form.save(commit=False)
+            new_question.test = get_object_or_404(Test, pk=pk)
+            new_question.save()
+            messages.success(request, "Вопрос создан!")
+
+        return redirect(reverse("test", kwargs={"pk": pk}))
+
+    def get(self, request, *args, **kwargs):
+        form = QuestionForm()
+        return render(request, "study/test/question-add.html", {
+            "form": form,
+            "types": Question.Type.choices
+        })
+
+
+@admin_only
+def delete_question(request, test_pk, question_pk):
+
+    question = get_object_or_404(Question, pk=question_pk)
+    name = question.text
+    question.delete()
+    messages.success(request, f"Вопрос {name} удален!")
+
+    return redirect(reverse("test", kwargs={"pk": test_pk}))
+
+
+@method_decorator(admin_only, name="dispatch")
+class TestQuestionEditView(LoginRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
+        question = get_object_or_404(Question, pk=kwargs["question_pk"])
+        form = QuestionForm(instance=question, data=request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Вопрос изменен!")
+
+        return redirect(reverse("test-question", kwargs=kwargs))
+
+    def get(self, request, *args, **kwargs):
+        question = get_object_or_404(Question, pk=kwargs["question_pk"])
+        form = QuestionForm(instance=question)
+        answer_form = AnswerForm()
+        return render(request, "study/test/question.html", {
+            "form": form,
+            "answer_form": answer_form,
+            "question": question,
+        })
+
+
+@admin_only
+def add_answer_variant(request, pk):
+    if request.method == "POST":
+        question = get_object_or_404(Question, pk=pk)
+        form = AnswerForm(request.POST)
+        if form.is_valid():
+            new_answer = form.save(commit=False)
+            new_answer.question = question
+            new_answer.save()
+            messages.success(request, "Добавлен вариант ответа")
+
+        return redirect(reverse("test-question", kwargs={"question_pk": pk, "test_pk": question.test.pk}))
+    else:
+        return redirect(reverse("tests"))
+
+
+@admin_only
+def add_correct_text_answer(request, pk):
+    if request.method == "POST":
+        question = get_object_or_404(Question, pk=pk)
+        form = AnswerForm(request.POST)
+        if form.is_valid():
+            answer = question.answers.first()
+            if answer:
+                answer.text = form.cleaned_data.get("text")
+                answer.save()
+                messages.success(request, "Правильный ответ изменен")
+            else:
+                new_answer = form.save(commit=False)
+                new_answer.question = question
+                new_answer.save()
+                messages.success(request, "Правильный ответ добавлен")
+
+        return redirect(reverse("test-question", kwargs={"question_pk": pk, "test_pk": question.test.pk}))
+    else:
+        return redirect(reverse("tests"))
+
+
+@admin_only
+def delete_answer(request, pk):
+
+    answer = get_object_or_404(Answer, pk=pk)
+    name = answer.text
+    answer.delete()
+    messages.success(request, f"Ответ {name} удален!")
+
+    return HttpResponse("Answer delete successfully!")
