@@ -16,17 +16,13 @@
     <form action="." method="POST" class="form form_left form_full-w mt-40" enctype="multipart/form-data">
         {% csrf_token %}
         <div class="form__item">
-            <label class="form__label">ID</label>
-            <input class="form__input" value="{{  lesson.id }}" disabled>
-        </div>
-        <div class="form__item">
             <label for="{{ form.name.id_for_label }}" class="form__label">{{ form.name.label }}</label>
             {{ form.name }}
         </div>
         <div class="form__item">
             <label for="{{ form.subject.id_for_label }}" class="form__label">{{ form.subject.label }}</label>
             <div class="form__input select" role="close">
-                <div class="select__selected">{{ lesson.subject|default_if_none:"---" }}</div>
+                <div class="select__selected">---</div>
                 <div class="select__options">
                     {% for subject in subjects %}
                     <div class="select__option" data-value="{{ subject.pk }}">{{ subject }}</div>
@@ -43,7 +39,7 @@
         <div class="form__item">
             <label for="{{ form.test.id_for_label }}" class="form__label">{{ form.test.label }}</label>
             <div class="form__input select" role="close">
-                <div class="select__selected">{{ lesson.test|default_if_none:"---" }}</div>
+                <div class="select__selected">---</div>
                 <div class="select__options">
                     <div class="select__option" data-value="">---</div>
                     {% for test in tests %}
@@ -65,10 +61,10 @@
         <div class="form__item">
             <label for="{{ form.photos.id_for_label }}" class="form__label">{{ form.photos.label }}</label>
             <div class="form__input select" role="close">
-                <div class="select__selected">{% for photo in lesson.photos.all %}{{ photo.name }} |{% endfor %}</div>
+                <div class="select__selected"></div>
                 <div class="select__options">
                     {% for photo in photos %}
-                    <div class="select__option select__option-multiple" data-selected="{% if photo in lesson.photos.all %}selected{% endif %}" data-value="{{ photo.pk }}">{{ photo.name }}</div>
+                    <div class="select__option select__option-multiple" data-selected="" data-value="{{ photo.pk }}">{{ photo.name }}</div>
                     {% endfor %}
                 </div>
                 <div class="select__icon">
@@ -83,12 +79,8 @@
             <label for="{{ form.text.id_for_label }}" class="form__label">{{ form.text.label }}</label>
             {{ form.text }}
         </div>
-
         <div class="form__item">
-            <button type="submit" class="btn">Сохранить</button>
-        </div>
-        <div class="form__item">
-            <a href="{% url 'lesson-delete' lesson.pk %}" class="btn btn_red confirm submit">Удалить</a>
+            <button type="submit" class="btn">Добавить</button>
         </div>
 
     </form>
@@ -137,15 +129,6 @@
     })
 
     // Confirm
-    $(".confirm.confirm-ajax").on('click', function(event) {
-        var req = confirm("Вы уверены?");
-        if (req){
-            var url = $(this).attr("data-url");
-            $.get(url);
-        }
-        event.preventDefault();
-    })
-
     $(".confirm").on('click', function(e) {
         var req = confirm("Вы уверены?");
         if (!req){

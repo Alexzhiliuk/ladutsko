@@ -90,6 +90,7 @@ class Lesson(models.Model):
     video = models.FileField(upload_to="lessons/videos/", null=True, blank=True)
     photos = models.ManyToManyField(LessonPhoto, blank=True)
     test = models.ForeignKey(Test, related_name="lessons", on_delete=models.SET_NULL, null=True, blank=True)
+    text = models.TextField(null=True, blank=True)
 
     class Meta:
         verbose_name = "Урок"

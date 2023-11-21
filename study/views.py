@@ -8,9 +8,12 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 from django.utils.decorators import method_decorator
 from .decorators.is_admin import admin_only
+from .decorators.is_teacher import teacher_only
+from .decorators.is_not_student import not_student
 from accounts.forms import UserEditForm, UserCreateForm
 from accounts.models import Application
-from .forms import AdminProfileEditForm, GroupForm, SubjectForm, LessonForm, AdminTestForm, QuestionForm, AnswerForm
+from .forms import AdminProfileEditForm, GroupForm, SubjectForm, LessonForm, \
+    AdminTestForm, QuestionForm, AnswerForm, LessonPhotoForm
 from .models import Group, Subject, Lesson, LessonPhoto, Test, Question, Answer
 from django.shortcuts import get_object_or_404
 from django.core.mail import send_mail
@@ -29,6 +32,13 @@ class IndexView(LoginRequiredMixin, View):
             "Предметы": reverse_lazy("subjects"),
             "Уроки": reverse_lazy("lessons"),
             "Тесты": reverse_lazy("tests"),
+        },
+        "teacher": {
+            "Моя группа": reverse_lazy("my-group"),
+            "Предметы": reverse_lazy("my-subjects"),
+            "Уроки": reverse_lazy("my-lessons"),
+            "Фото": reverse_lazy("my-photos"),
+            "Тесты": reverse_lazy("my-tests"),
         }
     }
 
@@ -37,6 +47,8 @@ class IndexView(LoginRequiredMixin, View):
         user = request.user
         if user.profile.type == 1:
             return render(request, "study/index.html", {"menu": self.menu["admin"]})
+        if user.profile.type == 2:
+            return render(request, "study/index.html", {"menu": self.menu["teacher"]})
 
 
 @method_decorator(admin_only, name="dispatch")
@@ -442,7 +454,7 @@ class SubjectCreateView(LoginRequiredMixin, View):
         return render(request, "study/subjects/add.html", {"form": form, "groups": groups})
 
 
-@admin_only
+@not_student
 def delete_subject(request, pk):
 
     subject = get_object_or_404(Subject, pk=pk)
@@ -464,7 +476,7 @@ class LessonsListView(LoginRequiredMixin, ListView):
 class LessonEditView(LoginRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
         lesson = get_object_or_404(Lesson, pk=pk)
-        form = LessonForm(instance=lesson, data=request.POST)
+        form = LessonForm(instance=lesson, data=request.POST, files=request.FILES)
         if form.is_valid():
             form.save()
             messages.success(request, "Урок изменен!")
@@ -489,7 +501,7 @@ class LessonEditView(LoginRequiredMixin, View):
 @method_decorator(admin_only, name="dispatch")
 class LessonCreateView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
-        form = LessonForm(request.POST)
+        form = LessonForm(data=request.POST, files=request.FILES)
         if form.is_valid():
             form.save()
             messages.success(request, "Урок создан!")
@@ -510,7 +522,7 @@ class LessonCreateView(LoginRequiredMixin, View):
         })
 
 
-@admin_only
+@not_student
 def delete_lesson(request, pk):
 
     lesson = get_object_or_404(Lesson, pk=pk)
@@ -521,14 +533,14 @@ def delete_lesson(request, pk):
     return redirect(reverse("lessons"))
 
 
-@method_decorator(admin_only, name="dispatch")
+@method_decorator(not_student, name="dispatch")
 class TestsListView(LoginRequiredMixin, ListView):
     model = Test
     context_object_name = "objects"
     template_name = "study/test/list.html"
 
 
-@method_decorator(admin_only, name="dispatch")
+@method_decorator(not_student, name="dispatch")
 class TestEditView(LoginRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
         test = get_object_or_404(Test, pk=pk)
@@ -550,13 +562,19 @@ class TestEditView(LoginRequiredMixin, View):
         })
 
 
-@method_decorator(admin_only, name="dispatch")
+@method_decorator(not_student, name="dispatch")
 class TestCreateView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         form = AdminTestForm(request.POST)
         if form.is_valid():
             form.save()
             messages.success(request, "Тест создан!")
+        elif request.user.profile.type == 2:
+            name = request.POST.get("name")
+            Test.objects.create(owner=request.user, name=name)
+            messages.success(request, "Тест создан!")
+            return redirect(reverse("my-tests"))
+
         return redirect(reverse("tests"))
 
     def get(self, request, *args, **kwargs):
@@ -569,18 +587,19 @@ class TestCreateView(LoginRequiredMixin, View):
         })
 
 
-@admin_only
+@not_student
 def delete_test(request, pk):
 
     test = get_object_or_404(Test, pk=pk)
     name = test.name
     test.delete()
     messages.success(request, f"Тест {name} удален!")
+    if request.user.profile.type == 1:
+        return redirect(reverse("tests"))
+    return redirect(reverse("my-tests"))
 
-    return redirect(reverse("tests"))
 
-
-@method_decorator(admin_only, name="dispatch")
+@method_decorator(not_student, name="dispatch")
 class TestQuestionCreateView(LoginRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
         form = QuestionForm(request.POST)
@@ -600,7 +619,7 @@ class TestQuestionCreateView(LoginRequiredMixin, View):
         })
 
 
-@admin_only
+@not_student
 def delete_question(request, test_pk, question_pk):
 
     question = get_object_or_404(Question, pk=question_pk)
@@ -611,7 +630,7 @@ def delete_question(request, test_pk, question_pk):
     return redirect(reverse("test", kwargs={"pk": test_pk}))
 
 
-@method_decorator(admin_only, name="dispatch")
+@method_decorator(not_student, name="dispatch")
 class TestQuestionEditView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         question = get_object_or_404(Question, pk=kwargs["question_pk"])
@@ -633,7 +652,7 @@ class TestQuestionEditView(LoginRequiredMixin, View):
         })
 
 
-@admin_only
+@not_student
 def add_answer_variant(request, pk):
     if request.method == "POST":
         question = get_object_or_404(Question, pk=pk)
@@ -649,7 +668,7 @@ def add_answer_variant(request, pk):
         return redirect(reverse("tests"))
 
 
-@admin_only
+@not_student
 def add_correct_text_answer(request, pk):
     if request.method == "POST":
         question = get_object_or_404(Question, pk=pk)
@@ -671,7 +690,7 @@ def add_correct_text_answer(request, pk):
         return redirect(reverse("tests"))
 
 
-@admin_only
+@not_student
 def delete_answer(request, pk):
 
     answer = get_object_or_404(Answer, pk=pk)
@@ -680,3 +699,224 @@ def delete_answer(request, pk):
     messages.success(request, f"Ответ {name} удален!")
 
     return HttpResponse("Answer delete successfully!")
+
+
+@method_decorator(teacher_only, name="dispatch")
+class MyGroupListView(LoginRequiredMixin, ListView):
+    model = User
+    context_object_name = "objects"
+    template_name = "study/teacher/my_group.html"
+
+    def get_queryset(self):
+        group = self.request.user.study_groups.first()
+        if group:
+            students = group.students.all()
+            return students
+        return []
+
+
+@method_decorator(teacher_only, name="dispatch")
+class MyGroupCreateView(LoginRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
+        form = GroupForm(request.POST)
+        if form.is_valid():
+            new_group = form.save(commit=False)
+            new_group.owner = request.user
+            new_group.save()
+            messages.success(request, "Ваша группа создана!")
+            return redirect(reverse("my-group"))
+
+        return redirect(reverse("my-group-create"))
+
+    def get(self, request, *args, **kwargs):
+        form = GroupForm()
+        return render(request, "study/teacher/create-group.html", {"form": form})
+
+
+def exclude_student(request, pk):
+    student = get_object_or_404(User, pk=pk)
+    group = request.user.study_groups.first()
+    group.students.remove(student)
+    messages.success(request, "Ученик был исключен")
+    return redirect(reverse("my-group"))
+
+
+@method_decorator(teacher_only, name="dispatch")
+class MySubjectsListView(LoginRequiredMixin, ListView):
+    model = Subject
+    context_object_name = "objects"
+    template_name = "study/teacher/my_subjects.html"
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        return qs.filter(group__owner=self.request.user)
+
+
+@method_decorator(teacher_only, name="dispatch")
+class MySubjectCreateView(LoginRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
+        group = request.user.study_groups.first()
+        subject_name = request.POST.get("name")
+        if not group:
+            messages.error(request, "У вас нет своей группы!")
+            return redirect(reverse("index"))
+
+        Subject.objects.create(name=subject_name, group=group)
+        messages.success(request, "Предмет создан!")
+        return redirect(reverse("my-subjects"))
+
+    def get(self, request, *args, **kwargs):
+        form = SubjectForm()
+        return render(request, "study/teacher/create-subject.html", {"form": form})
+
+
+@method_decorator(teacher_only, name="dispatch")
+class MySubjectEditView(LoginRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
+        subject = get_object_or_404(Subject, pk=kwargs["pk"])
+        form = SubjectForm(instance=subject, data=request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Предмет изменен!")
+
+        return redirect(reverse("my-subject", kwargs=kwargs))
+
+    def get(self, request, *args, **kwargs):
+        subject = get_object_or_404(Subject, pk=kwargs["pk"])
+        form = SubjectForm(instance=subject)
+        return render(request, "study/teacher/edit-subject.html", {"form": form, "subject": subject})
+
+
+@method_decorator(teacher_only, name="dispatch")
+class MyLessonsListView(LoginRequiredMixin, ListView):
+    model = Lesson
+    context_object_name = "objects"
+    template_name = "study/teacher/my_lessons.html"
+
+    def get_queryset(self):
+        qs = super().get_queryset().filter(subject__group__owner=self.request.user)
+        objects = {}
+        for lesson in qs:
+            subject = lesson.subject
+            if subject in objects:
+                objects[subject].append(lesson)
+            else:
+                objects[subject] = [lesson]
+        return objects
+
+
+@method_decorator(teacher_only, name="dispatch")
+class MyLessonCreateView(LoginRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
+        form = LessonForm(data=request.POST, files=request.FILES)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Урок создан")
+
+        return redirect(reverse("my-lessons"))
+
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        form = LessonForm()
+        tests = user.tests.all()
+        photos = user.lesson_photos.all()
+        subjects = user.study_groups.first().subjects.all()
+        return render(request, "study/teacher/create-lesson.html", {
+            "form": form,
+            "tests": tests,
+            "photos": photos,
+            "subjects": subjects,
+        })
+
+
+@method_decorator(teacher_only, name="dispatch")
+class MyLessonEditView(LoginRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
+        lesson = get_object_or_404(Lesson, pk=kwargs["pk"])
+        form = LessonForm(instance=lesson, data=request.POST, files=request.FILES)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Урок изменен")
+
+        return redirect(reverse("my-lesson", kwargs=kwargs))
+
+    def get(self, request, *args, **kwargs):
+        lesson = get_object_or_404(Lesson, pk=kwargs["pk"])
+        user = request.user
+        form = LessonForm(instance=lesson)
+        tests = user.tests.all()
+        photos = user.lesson_photos.all()
+        subjects = user.study_groups.first().subjects.all()
+        return render(request, "study/teacher/edit-lesson.html", {
+            "form": form,
+            "tests": tests,
+            "photos": photos,
+            "subjects": subjects,
+            "lesson": lesson,
+        })
+
+
+@method_decorator(teacher_only, name="dispatch")
+class MyPhotosView(LoginRequiredMixin, ListView):
+    model = LessonPhoto
+    context_object_name = "objects"
+    template_name = "study/teacher/my_photos.html"
+
+    def get_queryset(self):
+        return super().get_queryset().filter(owner=self.request.user)
+
+
+@method_decorator(teacher_only, name="dispatch")
+class MyPhotoCreateView(LoginRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
+        form = LessonPhotoForm(data=request.POST, files=request.FILES)
+        if form.is_valid():
+            new_photo = form.save(commit=False)
+            new_photo.owner = request.user
+            new_photo.save()
+            messages.success(request, "Фото создано")
+
+        return redirect(reverse("my-photos"))
+
+    def get(self, request, *args, **kwargs):
+        form = LessonPhotoForm()
+        return render(request, "study/teacher/create-photo.html", {
+            "form": form,
+        })
+
+
+@method_decorator(teacher_only, name="dispatch")
+class MyPhotoEditView(LoginRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
+        photo = get_object_or_404(LessonPhoto, pk=kwargs["pk"])
+        form = LessonPhotoForm(instance=photo, data=request.POST, files=request.FILES)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Фото изменено")
+
+        return redirect(reverse("my-photo", kwargs=kwargs))
+
+    def get(self, request, *args, **kwargs):
+        photo = get_object_or_404(LessonPhoto, pk=kwargs["pk"])
+        form = LessonPhotoForm(instance=photo)
+        return render(request, "study/teacher/edit-photo.html", {
+            "form": form,
+            "photo": photo
+        })
+
+
+def delete_photo(request, pk):
+    photo = get_object_or_404(LessonPhoto, pk=pk)
+    name = photo.name
+    photo.delete()
+    messages.success(request, f"Фото {name} удалено")
+    return HttpResponse("Ok")
+
+
+class MyTestsListView(TestsListView):
+    model = Test
+    context_object_name = "objects"
+    template_name = "study/test/list.html"
+
+    def get_queryset(self):
+        return super().get_queryset().filter(owner=self.request.user)

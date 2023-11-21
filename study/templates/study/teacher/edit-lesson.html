@@ -16,10 +16,6 @@
     <form action="." method="POST" class="form form_left form_full-w mt-40" enctype="multipart/form-data">
         {% csrf_token %}
         <div class="form__item">
-            <label class="form__label">ID</label>
-            <input class="form__input" value="{{  lesson.id }}" disabled>
-        </div>
-        <div class="form__item">
             <label for="{{ form.name.id_for_label }}" class="form__label">{{ form.name.label }}</label>
             {{ form.name }}
         </div>
@@ -137,20 +133,14 @@
     })
 
     // Confirm
-    $(".confirm.confirm-ajax").on('click', function(event) {
-        var req = confirm("Вы уверены?");
-        if (req){
-            var url = $(this).attr("data-url");
-            $.get(url);
-        }
-        event.preventDefault();
-    })
-
     $(".confirm").on('click', function(e) {
         var req = confirm("Вы уверены?");
-        if (!req){
-            event.preventDefault();
+        if (req){
+            let url = $(this).attr("href")
+            $.get(url)
+            document.location.replace("{% url 'my-lessons' %}")
         }
+        event.preventDefault();
 
     })
 </script>
