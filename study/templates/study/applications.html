@@ -32,7 +32,7 @@
                 </td>
                 <td>{{ object.first_name|default:"-" }}</td>
                 <td>{{ object.last_name|default:"-" }}</td>
-                <td>{{ object.profile.middle_name|default_if_none:"-" }}</td>
+                <td>{{ object.middle_name|default:"-" }}</td>
                 <td>{{ object.email|default:"-" }}</td>
                 <td>
                     <a href="#" class="table__foreign-key">{{ object.group_id }}</a>

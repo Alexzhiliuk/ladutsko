@@ -3,7 +3,7 @@
 {% load static %}
 
 
-{% block page_title %}Группа{% endblock %}
+{% block page_title %}Предмет{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/select.css' %}">
@@ -11,7 +11,7 @@
 
 {% block content %}
 <section class="section-teachers">
-    <h1 class="h1 h1_center">Группа</h1>
+    <h1 class="h1 h1_center">Предмет</h1>
 
     <form action="." method="POST" class="form mt-40">
         {% csrf_token %}
