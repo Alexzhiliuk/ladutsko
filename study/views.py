@@ -9,6 +9,7 @@ from django.contrib.auth.models import User
 from django.utils.decorators import method_decorator
 from .decorators.is_admin import admin_only
 from accounts.forms import UserEditForm, UserCreateForm
+from accounts.models import Application
 from .forms import AdminProfileEditForm
 from .models import Group
 from django.shortcuts import get_object_or_404
@@ -23,7 +24,7 @@ class IndexView(LoginRequiredMixin, View):
                 "Учителя": reverse_lazy("teachers"),
                 "Ученики": reverse_lazy("students"),
             },
-            "Заявки": "#",
+            "Заявки": reverse_lazy("applications"),
             "Группы": "#",
             "Предметы": "#",
             "Уроки": "#",
@@ -274,3 +275,47 @@ def delete_student(request, pk):
     messages.success(request, f"Ученик {username} удален!")
 
     return redirect(reverse("students"))
+
+
+@method_decorator(admin_only, name="dispatch")
+class ApplicationsListView(LoginRequiredMixin, ListView):
+    model = Application
+    context_object_name = "objects"
+    template_name = "study/applications.html"
+
+
+@method_decorator(admin_only, name="dispatch")
+class ApplicationView(LoginRequiredMixin, View):
+    def get(self, request, pk, *args, **kwargs):
+        application = get_object_or_404(Application, pk=pk)
+        user_form = UserCreateForm(initial={
+            "first_name": application.first_name,
+            "last_name": application.last_name,
+            "email": application.email
+        })
+        profile_form = AdminProfileEditForm(initial={
+            "middle_name": application.middle_name,
+            "group": application.group_id
+        })
+        groups = Group.objects.all()
+
+        if not(Group.objects.filter(id=application.group_id).first()):
+            messages.error(request, "Пользователь указал несуществующую группу!")
+
+        return render(request, "study/application.html", {
+            "user_form": user_form,
+            "profile_form": profile_form,
+            "groups": groups,
+            "application": application
+        })
+
+
+@admin_only
+def delete_application(request, pk):
+
+    application = get_object_or_404(Application, pk=pk)
+    email = application.email
+    application.delete()
+    messages.success(request, f"Заявка от {email} удален!")
+
+    return redirect(reverse("applications"))
