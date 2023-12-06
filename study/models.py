@@ -20,8 +20,8 @@ class Subject(models.Model):
     name = models.CharField(max_length=128)
 
     class Meta:
-        verbose_name = "Предмет"
-        verbose_name_plural = "Предметы"
+        verbose_name = "Дисциплина"
+        verbose_name_plural = "Дисциплины"
 
     def __str__(self):
         return f"{self.name}: {self.group.name}"
@@ -116,8 +116,8 @@ class Lesson(models.Model):
     text = models.TextField(null=True, blank=True)
 
     class Meta:
-        verbose_name = "Урок"
-        verbose_name_plural = "Уроки"
+        verbose_name = "Занятие"
+        verbose_name_plural = "Занятия"
 
     def __str__(self):
         return f"{self.name} ({self.subject})"
