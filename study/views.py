@@ -175,7 +175,7 @@ def delete_teacher(request, pk):
     teacher = get_object_or_404(User, pk=pk)
     username = teacher.username
     teacher.delete()
-    messages.success(request, f"Учитель {username} удален!")
+    messages.success(request, f"Преподаватель {username} удален!")
 
     return redirect(reverse("teachers"))
 
@@ -292,7 +292,7 @@ def delete_student(request, pk):
     student = get_object_or_404(User, pk=pk)
     username = student.username
     student.delete()
-    messages.success(request, f"Ученик {username} удален!")
+    messages.success(request, f"Студент {username} удален!")
 
     return redirect(reverse("students"))
 
@@ -336,7 +336,7 @@ def delete_application(request, pk):
     application = get_object_or_404(Application, pk=pk)
     email = application.email
     application.delete()
-    messages.success(request, f"Заявка от {email} удален!")
+    messages.success(request, f"Заявка от {email} удалена!")
 
     return redirect(reverse("applications"))
 
@@ -436,7 +436,7 @@ class SubjectEditView(LoginRequiredMixin, View):
         form = SubjectForm(instance=subject, data=request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, "Предмет успешно изменен")
+            messages.success(request, "Дисциплина успешно изменена")
 
         return redirect(reverse("subject", kwargs={"pk": pk}))
 
@@ -453,7 +453,7 @@ class SubjectCreateView(LoginRequiredMixin, View):
         form = SubjectForm(data=request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, "Предмет успешно создан")
+            messages.success(request, "Дисциплина успешно создана")
 
         return redirect(reverse("subjects"))
 
@@ -469,7 +469,7 @@ def delete_subject(request, pk):
     subject = get_object_or_404(Subject, pk=pk)
     name = subject.name
     subject.delete()
-    messages.success(request, f"Предмет {name} удален!")
+    messages.success(request, f"Дисциплина {name} удалена!")
 
     return redirect(reverse("subjects"))
 
@@ -537,7 +537,7 @@ def delete_lesson(request, pk):
     lesson = get_object_or_404(Lesson, pk=pk)
     name = lesson.name
     lesson.delete()
-    messages.success(request, f"Урок {name} удален!")
+    messages.success(request, f"Занятие {name} удалено!")
 
     return redirect(reverse("lessons"))
 

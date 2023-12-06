@@ -99,6 +99,12 @@ input::placeholder {
 	background: var(--red);
 }
 
+.btn.btn-table {
+    padding: 10px;
+    font-size: 16px;
+    font-weight: 500;
+}
+
 button[type='submit'],
 button.submit {
 	width: 100%;
@@ -294,5 +300,13 @@ button.submit {
 .message.success {
     background: var(--green);
     color: white;
+}
+
+.back {
+    display: inline-block;
+    margin-bottom: 20px;
+    font-size: 16px;
+    font-weight: 500;
+    color: black;
 }
 

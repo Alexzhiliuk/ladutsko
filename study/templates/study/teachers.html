@@ -3,7 +3,7 @@
 {% load static %}
 
 
-{% block page_title %}Учителя{% endblock %}
+{% block page_title %}Преподаватели{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/table.css' %}">
@@ -11,7 +11,7 @@
 
 {% block content %}
 <section class="section-teachers">
-    <h1 class="h1">Учителя</h1>
+    <h1 class="h1">Преподаватели</h1>
     <a href="{% url 'teacher-add' %}" class="btn mt-40">Добавить</a>
     <div class="table-wrapper mt-40">
         <table class="table">
@@ -23,6 +23,7 @@
                 <th>Отчество</th>
                 <th>Email</th>
                 <th>Группа</th>
+                <th></th>
             </tr>
         </thead>
         <tbody>
@@ -37,6 +38,9 @@
                 <td>{{ user.email|default:"-" }}</td>
                 <td>
                     <a href="#" class="table__foreign-key">{{ user.study_groups.first.id }}</a>
+                </td>
+                <td>
+                    <a href="{% url 'teacher' user.id %}" class="btn btn-table">изменить</a>
                 </td>
             </tr>
             {% endfor %}

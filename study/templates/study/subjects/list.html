@@ -2,7 +2,7 @@
 {% load static %}
 
 
-{% block page_title %}Предметы{% endblock %}
+{% block page_title %}Дисциплины{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/table.css' %}">
@@ -10,7 +10,7 @@
 
 {% block content %}
 <section >
-    <h1 class="h1">Предметы</h1>
+    <h1 class="h1">Дисциплины</h1>
     <a href="{% url 'subject-add' %}" class="btn mt-40">Добавить</a>
     <div class="table-wrapper mt-40">
         <table class="table">
@@ -30,6 +30,9 @@
                 <td>{{ object.name|default:"-" }}</td>
                 <td>
                     <a href="{% if object.group %}{% url 'group' object.group.pk %}{% endif %}" class="table__foreign-key">{{ object.group.id }}</a>
+                </td>
+                <td>
+                    <a href="{% url 'subject' object.id %}" class="btn btn-table">изменить</a>
                 </td>
             </tr>
             {% endfor %}
