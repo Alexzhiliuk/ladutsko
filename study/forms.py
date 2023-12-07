@@ -41,8 +41,8 @@ class GroupForm(forms.ModelForm):
 class SubjectForm(forms.ModelForm):
     class Meta:
         model = Subject
-        fields = ("name", "group")
-        labels = {"name": "Название", "group": "Группа"}
+        fields = ("name", "owner", "groups")
+        labels = {"name": "Название", "owner": "Преподаватель", "groups": "Группы"}
 
     def __init__(self, *args, **kwargs):
         super(SubjectForm, self).__init__(*args, **kwargs)
@@ -55,7 +55,7 @@ class LessonForm(forms.ModelForm):
     class Meta:
         model = Lesson
         fields = ("name", "subject", "test", "video", "photos", "text")
-        labels = {"name": "Название", "subject": "Предмет", "test": "Тест", "video": "Видео", "photos": "Фото", "text": "Текст"}
+        labels = {"name": "Название", "subject": "Дисциплина", "test": "Тест", "video": "Видео", "photos": "Фото", "text": "Текст"}
 
     def __init__(self, *args, **kwargs):
         super(LessonForm, self).__init__(*args, **kwargs)

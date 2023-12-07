@@ -39,7 +39,7 @@
     </div>
 
     {% if lesson.test %}
-    <h2 class="h2 mt-40">Тест <span class="test-score">{{ lesson.get_test_best_try|floatformat:0 }}/100</span></h2>
+    <h2 class="h2 mt-40">Тест <span class="test-score">{{ best_try|floatformat:0 }}/100</span></h2>
     <a href="{% url 'student-test' lesson.test.pk %}" class="btn mt-20">Пройти</a>
     {% endif %}
 </section>

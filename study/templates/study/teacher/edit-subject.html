@@ -3,14 +3,15 @@
 {% load static %}
 
 
-{% block page_title %}Предмет{% endblock %}
+{% block page_title %}Дисциплина{% endblock %}
 
 {% block extra_css %}
 {% endblock %}
 
 {% block content %}
+<a href="{% url 'my-subjects' %}" class="back">Назад</a>
 <section class="section-teachers">
-    <h1 class="h1 h1_center">Предмет</h1>
+    <h1 class="h1 h1_center">Дисциплина</h1>
 
     <form action="." method="POST" class="form mt-40">
         {% csrf_token %}
@@ -18,7 +19,8 @@
             <label for="{{ form.name.id_for_label }}" class="form__label">{{ form.name.label }}</label>
             {{ form.name }}
         </div>
-        {{ form.group.as_hidden }}
+        {{ form.owner.as_hidden }}
+        {{ form.groups.as_hidden }}
         <div class="form__item">
             <button type="submit" class="btn">Сохранить</button>
         </div>
@@ -31,10 +33,10 @@
 </section>
 
 <section class="section">
-    <h2 class="h2 mt-40">Уроки</h2>
+    <h2 class="h2 mt-40">Занятия</h2>
     <div class="menu mt-40">
         {% for lesson in subject.lessons.all %}
-        <a href="" class="menu__item">
+        <a href="{% url 'my-lesson' lesson.id %}" class="menu__item">
             {{ lesson.name }}
             {% if lesson.test %}
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -44,7 +46,7 @@
             {% endif %}
         </a>
         {% endfor %}
-        <a href="" class="btn">Добавить</a>
+        <a href="{% url 'my-lesson-create' %}" class="btn">Добавить</a>
     </div>
 </section>
 

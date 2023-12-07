@@ -16,7 +16,8 @@ class Group(models.Model):
 
 
 class Subject(models.Model):
-    group = models.ForeignKey(Group, related_name="subjects", on_delete=models.CASCADE)
+    owner = models.ForeignKey(User, related_name="subjects", on_delete=models.CASCADE)
+    groups = models.ManyToManyField(Group, blank=True)
     name = models.CharField(max_length=128)
 
     class Meta:
@@ -24,7 +25,7 @@ class Subject(models.Model):
         verbose_name_plural = "Дисциплины"
 
     def __str__(self):
-        return f"{self.name}: {self.group.name}"
+        return f"{self.name}: {self.owner.username}"
 
 
 class LessonPhoto(models.Model):
@@ -124,6 +125,12 @@ class Lesson(models.Model):
 
     def get_test_best_try(self):
         tries = [try_.score for try_ in Try.objects.filter(test=self.test)]
+        if tries:
+            return max(tries)
+        return 0
+
+    def get_test_user_best_try(self, user):
+        tries = [try_.score for try_ in Try.objects.filter(test=self.test, user=user)]
         if tries:
             return max(tries)
         return 0

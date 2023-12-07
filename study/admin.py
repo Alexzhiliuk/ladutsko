@@ -10,7 +10,7 @@ class GroupAdmin(admin.ModelAdmin):
 
 @admin.register(Subject)
 class SubjectAdmin(admin.ModelAdmin):
-    list_display = ["name", "group"]
+    list_display = ["name", "owner"]
 
 
 @admin.register(Lesson)

@@ -3,14 +3,14 @@
 {% load static %}
 
 
-{% block page_title %}Создать предмет{% endblock %}
+{% block page_title %}Создать дисциплину{% endblock %}
 
 {% block extra_css %}
 {% endblock %}
 
 {% block content %}
 <section class="section-teachers">
-    <h1 class="h1 h1_center">Предмет</h1>
+    <h1 class="h1 h1_center">Дисциплина</h1>
 
     <form action="." method="POST" class="form mt-40">
         {% csrf_token %}
@@ -18,7 +18,8 @@
             <label for="{{ form.name.id_for_label }}" class="form__label">{{ form.name.label }}</label>
             {{ form.name }}
         </div>
-        {{ form.group.as_hidden }}
+        {{ form.owner.as_hidden }}
+        {{ form.groups.as_hidden }}
         <div class="form__item">
             <button type="submit" class="btn">Создать</button>
         </div>

@@ -18,7 +18,8 @@
             <tr>
                 <th>ID</th>
                 <th>Название</th>
-                <th>Группа</th>
+                <th>Преподаватель</th>
+                <th>Группы</th>
             </tr>
         </thead>
         <tbody>
@@ -29,7 +30,12 @@
                 </td>
                 <td>{{ object.name|default:"-" }}</td>
                 <td>
-                    <a href="{% if object.group %}{% url 'group' object.group.pk %}{% endif %}" class="table__foreign-key">{{ object.group.id }}</a>
+                    <a href="{% url 'teacher' object.owner.pk %}" class="table__foreign-key">{{ object.owner.username }}</a>
+                </td>
+                <td>
+                    {% for group in object.groups.all %}
+                    <a href="{% url 'group' group.pk %}" class="table__foreign-key">{{ group.id }}</a>,
+                    {% endfor %}
                 </td>
                 <td>
                     <a href="{% url 'subject' object.id %}" class="btn btn-table">изменить</a>
