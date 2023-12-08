@@ -16,7 +16,7 @@ class Group(models.Model):
 
 
 class Subject(models.Model):
-    owner = models.ForeignKey(User, related_name="subjects", on_delete=models.CASCADE)
+    owner = models.ForeignKey(User, related_name="subjects", on_delete=models.CASCADE, null=True, blank=True)
     groups = models.ManyToManyField(Group, blank=True)
     name = models.CharField(max_length=128)
 

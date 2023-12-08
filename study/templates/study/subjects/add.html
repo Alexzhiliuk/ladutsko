@@ -63,9 +63,7 @@
 </section>
 
 <script>
-    $("select").prop('hidden', true)
-    $("select option:first").remove()
-    $("select option:first").prop("selected", true)
+    $("select").prop('hidden', true).prop('required', false)
 
     $(".select").on('click', function() {
         if ($(this).attr("role") == "close") {

@@ -52,10 +52,13 @@ class SubjectForm(forms.ModelForm):
 
 
 class LessonForm(forms.ModelForm):
+
+    photo = forms.ImageField(label="Фото", required=False)
+
     class Meta:
         model = Lesson
-        fields = ("name", "subject", "test", "video", "photos", "text")
-        labels = {"name": "Название", "subject": "Дисциплина", "test": "Тест", "video": "Видео", "photos": "Фото", "text": "Текст"}
+        fields = ("name", "subject", "test", "video", "text")
+        labels = {"name": "Название", "subject": "Дисциплина", "test": "Тест", "video": "Видео", "text": "Текст"}
 
     def __init__(self, *args, **kwargs):
         super(LessonForm, self).__init__(*args, **kwargs)

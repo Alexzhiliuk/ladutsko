@@ -326,11 +326,17 @@ button.submit {
     position: absolute;
     right: 0;
     top: 50px;
-    width: 500px;
+    width: 540px;
+    padding: 20px;
+    background: rgba(49, 212, 153, 0.5);
+    border-radius: 20px;
+    border: 1px solid  var(--gray);
 }
 
 .about-text {
     margin-top: 20px;
     font-size: 16px;
+    font-weight: 500;
+    line-height: 1.5;
 }
 

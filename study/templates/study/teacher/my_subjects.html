@@ -30,7 +30,7 @@
                         <a href="{% url 'my-subject' object.pk %}" class="btn btn-table">изменить</a>
                     </td>
                     <td>
-                        <a href="{% url 'add-subject-to-group' object.pk %}" class="btn btn-table">добавить в группу</a>
+                        <a href="{% url 'add-subject-to-group' object.pk %}" class="btn btn-table">добавить группу</a>
                     </td>
                 </tr>
                 {% endif %}
@@ -60,7 +60,7 @@
                         <a href="#" class="table__foreign-key">{{ object.owner.username }}</a>
                     </td>
                     <td>
-                        <a href="{% url 'add-subject-to-group' object.id %}" class="btn btn-table">добавить в группу</a>
+                        <a href="{% url 'add-subject-to-group' object.id %}" class="btn btn-table">добавить группу</a>
                     </td>
                 </tr>
                 {% endif %}

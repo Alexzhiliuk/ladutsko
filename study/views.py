@@ -1,8 +1,11 @@
+import pandas as pd
+from datetime import datetime as dt
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
 from django.core.mail import send_mail
+from django.forms import model_to_dict
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.shortcuts import redirect, render
@@ -38,7 +41,6 @@ class IndexView(LoginRequiredMixin, View):
             "Моя группа": reverse_lazy("my-group"),
             "Дисциплины": reverse_lazy("my-subjects"),
             "Занятия": reverse_lazy("my-lessons"),
-            "Фото": reverse_lazy("my-photos"),
             "Тесты": reverse_lazy("my-tests"),
         }
     }
@@ -505,7 +507,15 @@ class LessonEditView(LoginRequiredMixin, View):
         lesson = get_object_or_404(Lesson, pk=pk)
         form = LessonForm(instance=lesson, data=request.POST, files=request.FILES)
         if form.is_valid():
-            form.save()
+            photo_field = form.cleaned_data.get("photo")
+            if photo_field:
+                lesson.photos.clear()
+                photo = LessonPhoto(owner=request.user, name=photo_field.name, photo=photo_field)
+                photo.save()
+                new_lesson = form.save()
+                new_lesson.photos.add(photo)
+            else:
+                form.save()
             messages.success(request, "Урок изменен!")
         return redirect(reverse("lesson", kwargs={"pk": pk}))
 
@@ -514,14 +524,14 @@ class LessonEditView(LoginRequiredMixin, View):
         form = LessonForm(instance=lesson)
         subjects = Subject.objects.all()
         tests = Test.objects.all()
-        photos = LessonPhoto.objects.filter(owner=lesson.subject.owner)
+        photo = lesson.photos.first()
 
         return render(request, "study/lesson/edit.html", {
             "form": form,
             "lesson": lesson,
             "subjects": subjects,
             "tests": tests,
-            "photos": photos
+            "photo": photo
         })
 
 
@@ -530,7 +540,14 @@ class LessonCreateView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         form = LessonForm(data=request.POST, files=request.FILES)
         if form.is_valid():
-            form.save()
+            photo_field = form.cleaned_data.get("photo")
+            if photo_field:
+                photo = LessonPhoto(owner=request.user, name=photo_field.name, photo=photo_field)
+                photo.save()
+                new_lesson = form.save()
+                new_lesson.photos.add(photo)
+            else:
+                form.save()
             messages.success(request, "Урок создан!")
         return redirect(reverse("lessons"))
 
@@ -862,7 +879,14 @@ class MyLessonCreateView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         form = LessonForm(data=request.POST, files=request.FILES)
         if form.is_valid():
-            form.save()
+            photo_field = form.cleaned_data.get("photo")
+            if photo_field:
+                photo = LessonPhoto(owner=request.user, name=photo_field.name, photo=photo_field)
+                photo.save()
+                new_lesson = form.save()
+                new_lesson.photos.add(photo)
+            else:
+                form.save()
             messages.success(request, "Занятие создано")
 
         return redirect(reverse("my-lessons"))
@@ -887,7 +911,15 @@ class MyLessonEditView(LoginRequiredMixin, View):
         lesson = get_object_or_404(Lesson, pk=kwargs["pk"])
         form = LessonForm(instance=lesson, data=request.POST, files=request.FILES)
         if form.is_valid():
-            form.save()
+            photo_field = form.cleaned_data.get("photo")
+            if photo_field:
+                lesson.photos.clear()
+                photo = LessonPhoto(owner=request.user, name=photo_field.name, photo=photo_field)
+                photo.save()
+                new_lesson = form.save()
+                new_lesson.photos.add(photo)
+            else:
+                form.save()
             messages.success(request, "Занятие изменено")
 
         return redirect(reverse("my-lesson", kwargs=kwargs))
@@ -897,12 +929,12 @@ class MyLessonEditView(LoginRequiredMixin, View):
         user = request.user
         form = LessonForm(instance=lesson)
         tests = user.tests.all()
-        photos = user.lesson_photos.all()
+        photo = lesson.photos.first()
         subjects = user.subjects.all()
         return render(request, "study/teacher/edit-lesson.html", {
             "form": form,
             "tests": tests,
-            "photos": photos,
+            "photo": photo,
             "subjects": subjects,
             "lesson": lesson,
         })
@@ -1040,3 +1072,20 @@ class StudentTestView(LoginRequiredMixin, View):
         return render(request, "study/student/test.html", {
             "test": test,
         })
+
+
+@not_student
+def download_test_tries(request, test_id):
+    test = get_object_or_404(Test, pk=test_id)
+    queryset = Try.objects.filter(test=test)
+    data = [model_to_dict(instance) for instance in queryset]
+
+    df = pd.DataFrame(data)
+
+    response = HttpResponse(content_type='application/xlsx')
+    response['Content-Disposition'] = f'attachment; filename="{str(dt.now())}.xlsx"'
+
+    with pd.ExcelWriter(response) as writer:
+        df.to_excel(writer, sheet_name='Test result')
+
+    return response

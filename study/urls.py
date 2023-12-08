@@ -68,4 +68,5 @@ urlpatterns = [
     path("student/lesson/<int:pk>/", views.StudentLessonView.as_view(), name="student-lesson"),
     path("student/test/<int:pk>/", views.StudentTestView.as_view(), name="student-test"),
 
+    path("test/<int:test_id>/download-tries/", views.download_test_tries, name="test-download-tries"),
 ]

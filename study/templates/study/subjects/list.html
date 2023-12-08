@@ -30,7 +30,7 @@
                 </td>
                 <td>{{ object.name|default:"-" }}</td>
                 <td>
-                    <a href="{% url 'teacher' object.owner.pk %}" class="table__foreign-key">{{ object.owner.username }}</a>
+                    {% if object.owner %}<a href="{% url 'teacher' object.owner.pk %}" class="table__foreign-key">{{ object.owner.username }}</a>{% endif %}
                 </td>
                 <td>
                     {% for group in object.groups.all %}
