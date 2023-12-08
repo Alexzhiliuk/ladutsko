@@ -25,19 +25,19 @@ class IndexView(LoginRequiredMixin, View):
     menu = {
         "admin": {
             "Пользователи": {
-                "Учителя": reverse_lazy("teachers"),
-                "Ученики": reverse_lazy("students"),
+                "Преподаватели": reverse_lazy("teachers"),
+                "Студенты": reverse_lazy("students"),
             },
             "Заявки": reverse_lazy("applications"),
             "Группы": reverse_lazy("groups"),
-            "Предметы": reverse_lazy("subjects"),
-            "Уроки": reverse_lazy("lessons"),
+            "Дисциплины": reverse_lazy("subjects"),
+            "Занятия": reverse_lazy("lessons"),
             "Тесты": reverse_lazy("tests"),
         },
         "teacher": {
             "Моя группа": reverse_lazy("my-group"),
-            "Предметы": reverse_lazy("my-subjects"),
-            "Уроки": reverse_lazy("my-lessons"),
+            "Дисциплины": reverse_lazy("my-subjects"),
+            "Занятия": reverse_lazy("my-lessons"),
             "Фото": reverse_lazy("my-photos"),
             "Тесты": reverse_lazy("my-tests"),
         }

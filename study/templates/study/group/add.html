@@ -10,8 +10,9 @@
 {% endblock %}
 
 {% block content %}
+<a href="{% url 'groups' %}" class="back">назад</a>
 <section class="section-teachers">
-    <h1 class="h1 h1_center">Ученик</h1>
+    <h1 class="h1 h1_center">Группа</h1>
 
     <form action="." method="POST" class="form mt-40">
         {% csrf_token %}

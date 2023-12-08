@@ -31,6 +31,9 @@
                 <td>
                     <a href="{% if object.owner %}{% url 'teacher' object.owner.pk %}{% endif %}" class="table__foreign-key">{{ object.owner }}</a>
                 </td>
+                <td>
+                    <a href="{% url 'test' object.pk %}" class="btn btn-table">изменить</a>
+                </td>
             </tr>
             {% endfor %}
         </tbody>
