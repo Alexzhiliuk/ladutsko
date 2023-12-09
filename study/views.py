@@ -1134,3 +1134,7 @@ class UploadLessonsView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         form = ExcelForm()
         return render(request, "study/lesson/upload.html", {"form": form})
+
+
+def about(request):
+    return render(request, "study/about.html")

@@ -44,6 +44,7 @@ urlpatterns = [
     path("test/<int:pk>/question/add/", views.TestQuestionCreateView.as_view(), name="test-question-add"),
     path("test/<int:test_pk>/question/<int:question_pk>/", views.TestQuestionEditView.as_view(), name="test-question"),
     path("test/<int:test_pk>/question/<int:question_pk>/delete", views.delete_question, name="test-question-delete"),
+    path("test/<int:test_id>/download-tries/", views.download_test_tries, name="test-download-tries"),
 
     path("question/<int:pk>/add-answer-variant/", views.add_answer_variant, name="add-answer-variant"),
     path("question/<int:pk>/add-correct-text-answer/", views.add_correct_text_answer, name="add-correct-text-answer"),
@@ -70,5 +71,5 @@ urlpatterns = [
     path("student/lesson/<int:pk>/", views.StudentLessonView.as_view(), name="student-lesson"),
     path("student/test/<int:pk>/", views.StudentTestView.as_view(), name="student-test"),
 
-    path("test/<int:test_id>/download-tries/", views.download_test_tries, name="test-download-tries"),
+    path("about/", views.about, name="about"),
 ]
