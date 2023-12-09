@@ -56,7 +56,7 @@ class IndexView(LoginRequiredMixin, View):
                 request,
                 "study/index.html",
                 {
-                    "menu": {subject.name: reverse_lazy("student-subject", kwargs={"pk": subject.pk}) for subject in Subject.objects.filter(owner=user.group_set.first().owner)}
+                    "menu": {subject.name: reverse_lazy("student-subject", kwargs={"pk": subject.pk}) for subject in user.group_set.first().subject_set.all()}
                 }
             )
 
@@ -93,7 +93,7 @@ class TeacherEditView(LoginRequiredMixin, View):
             profile = profile_form.save()
 
             if group.owner and group.owner != user:
-                messages.error(request, f"У группы {group.name} уже есть учитель!")
+                messages.error(request, f"У группы {group.name} уже есть проподаватель!")
                 return redirect(reverse("teacher", kwargs={"pk": pk}))
 
             group.owner = profile.user
@@ -1014,6 +1014,7 @@ class StudentSubjectView(LoginRequiredMixin, View):
 
         if not user.group_set.first():
             return HttpResponse("No permission")
+        print(user.group_set.first(), subject.groups.all())
         if user.group_set.first() not in subject.groups.all():
             return HttpResponse("No permission")
 
@@ -1051,8 +1052,6 @@ class StudentTestView(LoginRequiredMixin, View):
 
         if not user.group_set.first():
             return HttpResponse("No permission")
-        if user.group_set.first().owner != test.owner:
-            return HttpResponse("No permission")
 
         score = test.calculate_score(request.POST)
         Try.objects.create(user=user, test=test, score=score)
@@ -1065,8 +1064,6 @@ class StudentTestView(LoginRequiredMixin, View):
         test = get_object_or_404(Test, pk=kwargs["pk"])
 
         if not user.group_set.first():
-            return HttpResponse("No permission")
-        if user.group_set.first().owner != test.owner:
             return HttpResponse("No permission")
 
         return render(request, "study/student/test.html", {
