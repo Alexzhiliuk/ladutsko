@@ -27,11 +27,13 @@ urlpatterns = [
     path("subject/<int:pk>/", views.SubjectEditView.as_view(), name="subject"),
     path("subject/delete/<int:pk>/", views.delete_subject, name="subject-delete"),
     path("subject/add/", views.SubjectCreateView.as_view(), name="subject-add"),
+    path("subjects/upload/", views.UploadSubjectsView.as_view(), name="subjects-upload"),
 
     path("lessons/", views.LessonsListView.as_view(), name="lessons"),
     path("lesson/<int:pk>/", views.LessonEditView.as_view(), name="lesson"),
     path("lesson/delete/<int:pk>/", views.delete_lesson, name="lesson-delete"),
     path("lesson/add/", views.LessonCreateView.as_view(), name="lesson-add"),
+    path("lesson/upload/", views.UploadLessonsView.as_view(), name="lessons-upload"),
 
     path("photo/delete/<int:pk>/", views.delete_photo, name="photo-delete"),
 

@@ -19,8 +19,7 @@ from accounts.models import Application
 from .decorators.is_admin import admin_only
 from .decorators.is_not_student import not_student
 from .decorators.is_teacher import teacher_only
-from .forms import AdminProfileEditForm, GroupForm, SubjectForm, LessonForm, \
-    AdminTestForm, QuestionForm, AnswerForm, LessonPhotoForm
+from .forms import (AdminProfileEditForm, GroupForm, SubjectForm, LessonForm, AdminTestForm, QuestionForm, AnswerForm, LessonPhotoForm, ExcelForm)
 from .models import Group, Subject, Lesson, LessonPhoto, Test, Question, Answer, Try
 
 
@@ -611,13 +610,14 @@ class TestCreateView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         form = AdminTestForm(request.POST)
         if form.is_valid():
-            form.save()
-            messages.success(request, "Тест создан!")
-        elif request.user.profile.type == 2:
-            name = request.POST.get("name")
-            Test.objects.create(owner=request.user, name=name)
-            messages.success(request, "Тест создан!")
-            return redirect(reverse("my-tests"))
+            if request.user.profile.type == 2:
+                name = request.POST.get("name")
+                Test.objects.create(owner=request.user, name=name)
+                messages.success(request, "Тест создан!")
+                return redirect(reverse("my-tests"))
+            else:
+                form.save()
+                messages.success(request, "Тест создан!")
 
         return redirect(reverse("tests"))
 
@@ -1078,14 +1078,59 @@ class StudentTestView(LoginRequiredMixin, View):
 def download_test_tries(request, test_id):
     test = get_object_or_404(Test, pk=test_id)
     queryset = Try.objects.filter(test=test)
-    data = [model_to_dict(instance) for instance in queryset]
+    data = [{"студент": instance.user.username, "балл": instance.score} for instance in queryset]
 
     df = pd.DataFrame(data)
 
     response = HttpResponse(content_type='application/xlsx')
-    response['Content-Disposition'] = f'attachment; filename="{str(dt.now())}.xlsx"'
+    response['Content-Disposition'] = f'attachment; filename="{test.name}_{str(dt.now())}.xlsx"'
 
     with pd.ExcelWriter(response) as writer:
-        df.to_excel(writer, sheet_name='Test result')
+        df.to_excel(writer, sheet_name=f'Результаты теста {test.name}')
 
     return response
+
+
+class UploadSubjectsView(LoginRequiredMixin, View):
+
+    def post(self, request, *args, **kwargs):
+        form = ExcelForm(request.POST, request.FILES)
+        if form.is_valid():
+            df = pd.read_excel(request.FILES['excel'], names=["name", "owner"])
+            for index, row in df.iterrows():
+                name, owner = row["name"], User.objects.filter(username=row["owner"]).first()
+                if not(pd.isna(name)) and owner:
+                    Subject.objects.get_or_create(name=name, owner=owner)
+                elif not(pd.isna(name)):
+                    Subject.objects.get_or_create(name=name)
+            messages.success(request, "Дисциплины успешно загружены")
+
+        return redirect(reverse("subjects"))
+
+    def get(self, request, *args, **kwargs):
+        form = ExcelForm()
+        return render(request, "study/subjects/upload.html", {"form": form})
+
+
+class UploadLessonsView(LoginRequiredMixin, View):
+
+    def post(self, request, *args, **kwargs):
+        form = ExcelForm(request.POST, request.FILES)
+        if form.is_valid():
+            df = pd.read_excel(request.FILES['excel'], names=["name", "text", "subject"])
+            for index, row in df.iterrows():
+
+                subject = None if pd.isna(row["subject"]) else Subject.objects.filter(id=row["subject"]).first()
+                name = None if pd.isna(row["name"]) else row["name"]
+                text = None if pd.isna(row["text"]) else row["text"]
+
+                if name:
+                    Lesson.objects.get_or_create(name=name, text=text, subject=subject)
+
+            messages.success(request, "Занятия успешно загружены")
+
+        return redirect(reverse("lessons"))
+
+    def get(self, request, *args, **kwargs):
+        form = ExcelForm()
+        return render(request, "study/lesson/upload.html", {"form": form})

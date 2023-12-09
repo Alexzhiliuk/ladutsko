@@ -136,3 +136,13 @@ class LessonPhotoForm(forms.ModelForm):
 
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form__input'
+
+
+class ExcelForm(forms.Form):
+    excel = forms.FileField(label="Excel файл")
+
+    def __init__(self, *args, **kwargs):
+        super(ExcelForm, self).__init__(*args, **kwargs)
+
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form__input'

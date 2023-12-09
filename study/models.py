@@ -25,7 +25,9 @@ class Subject(models.Model):
         verbose_name_plural = "Дисциплины"
 
     def __str__(self):
-        return f"{self.name}: {self.owner.username}"
+        if self.owner:
+            return f"{self.name}: {self.owner.username}"
+        return f"{self.name}"
 
 
 class LessonPhoto(models.Model):
@@ -42,7 +44,7 @@ class LessonPhoto(models.Model):
 
 
 class Test(models.Model):
-    owner = models.ForeignKey(User, related_name="tests", on_delete=models.CASCADE)
+    owner = models.ForeignKey(User, related_name="tests", on_delete=models.CASCADE, null=True, blank=True)
     name = models.CharField(max_length=128)
 
     class Meta:
@@ -109,7 +111,7 @@ class Answer(models.Model):
 
 
 class Lesson(models.Model):
-    subject = models.ForeignKey(Subject, related_name="lessons", on_delete=models.CASCADE)
+    subject = models.ForeignKey(Subject, related_name="lessons", on_delete=models.CASCADE, null=True, blank=True)
     name = models.CharField(max_length=128)
     video = models.FileField(upload_to="lessons/videos/", null=True, blank=True)
     photos = models.ManyToManyField(LessonPhoto, blank=True)
