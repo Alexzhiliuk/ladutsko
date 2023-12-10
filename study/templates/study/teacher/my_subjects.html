@@ -2,7 +2,7 @@
 {% load static %}
 
 
-{% block page_title %}Мои предметы{% endblock %}
+{% block page_title %}Мои дисциплины{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/table.css' %}">
@@ -10,8 +10,8 @@
 
 {% block content %}
 <section >
-    <h1 class="h1">Мои предметы</h1>
-    <a href="{% url 'my-subject-create' %}" class="btn mt-40">Создать предмет</a>
+    <h1 class="h1">Мои дисциплины</h1>
+    <a href="{% url 'my-subject-create' %}" class="btn mt-40">Создать дисциплину</a>
     <div class="table-wrapper mt-40">
         <table class="table">
             <thead>
@@ -21,11 +21,49 @@
             </thead>
             <tbody>
                 {% for object in objects %}
+                {% if object.owner == user %}
                 <tr>
                     <td>
                         <a href="{% url 'my-subject' object.pk %}" class="table__object-url">{{ object.name|default:"-" }}</a>
                     </td>
+                    <td>
+                        <a href="{% url 'my-subject' object.pk %}" class="btn btn-table">изменить</a>
+                    </td>
+                    <td>
+                        <a href="{% url 'add-subject-to-group' object.pk %}" class="btn btn-table">добавить группу</a>
+                    </td>
                 </tr>
+                {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</section>
+
+<section class="mt-40">
+    <h2 class="h2">Все дисциплины</h2>
+    <div class="table-wrapper mt-40">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Название</th>
+                    <th>Преподаватель</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for object in objects %}
+                {% if object.owner != user %}
+                <tr>
+                    <td>{{ object.name|default:"-" }}</td>
+                    <td>
+                        <a href="#" class="table__foreign-key">{{ object.owner.username }}</a>
+                    </td>
+                    <td>
+                        <a href="{% url 'add-subject-to-group' object.id %}" class="btn btn-table">добавить группу</a>
+                    </td>
+                </tr>
+                {% endif %}
                 {% endfor %}
             </tbody>
         </table>

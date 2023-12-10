@@ -26,21 +26,22 @@
 	<header class="header">
 		<div class="container">
 			<ul class="header-menu">
+				<li><a href="{% url 'index' %}" class="logo"><img src="{% static 'img/logo.png' %}" alt=""></a></li>
+				<li><a href="{% url 'about' %}">О нас</a></li>
 				{% if user.is_authenticated %}
 				<li><a href="{% url 'index' %}">Главная</a></li>
 				{% if user.profile.type == 1 %}
-				<li><a href="{% url 'teachers' %}">Учителя</a></li>
-				<li><a href="{% url 'students' %}">Ученики</a></li>
+				<li><a href="{% url 'teachers' %}">Преподаватели</a></li>
+				<li><a href="{% url 'students' %}">Студенты</a></li>
 				<li><a href="{% url 'applications' %}">Заявки</a></li>
 				<li><a href="{% url 'groups' %}">Группы</a></li>
-				<li><a href="{% url 'subjects' %}">Предметы</a></li>
-				<li><a href="{% url 'lessons' %}">Уроки</a></li>
+				<li><a href="{% url 'subjects' %}">Дисциплины</a></li>
+				<li><a href="{% url 'lessons' %}">Занятия</a></li>
 				<li><a href="{% url 'tests' %}">Тесты</a></li>
 				{% elif user.profile.type == 2 %}
 				<li><a href="{% url 'my-group' %}">Моя группа</a></li>
-				<li><a href="{% url 'my-subjects' %}">Предметы</a></li>
-				<li><a href="{% url 'my-lessons' %}">Уроки</a></li>
-				<li><a href="{% url 'my-photos' %}">Фото</a></li>
+				<li><a href="{% url 'my-subjects' %}">Дисциплины</a></li>
+				<li><a href="{% url 'my-lessons' %}">Занятия</a></li>
 				<li><a href="{% url 'my-tests' %}">Тесты</a></li>
 				{% endif %}
 				<li class="header-menu-profile">

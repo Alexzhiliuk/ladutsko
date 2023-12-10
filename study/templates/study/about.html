@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% load util %}
+{% load static %}
+
+{% block page_title %}О нас{% endblock %}
+
+{% block content %}
+<section class="about-section">
+    <h1 class="h1">О нас</h1>
+    <p class="about-text">
+        Мы стремимся предоставить инновационный инструмент для образования, построить основу для обучения, предоставляя гибкость и удобство.
+        <br> <br>
+        Преподаватели могут творчески формировать уроки, а студенты могут погружаться в материал в том формате, который идеально соответствует их учебным потребностям и стилю.
+        <br> <br>
+        Наше приложение — ваш надежный компаньон в создании вдохновляющих образовательных программ.
+    </p>
+    <div class="about-section-img mt-20">
+        <img src="{% static 'img/about.jpg' %}" alt="">
+    </div>
+</section>
+<style>
+     .about-section-img {
+
+     }
+    .about-section img {
+        width: 100%;
+    }
+</style>
+{% endblock %}

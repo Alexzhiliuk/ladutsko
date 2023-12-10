@@ -29,7 +29,10 @@
                 </td>
                 <td>{{ object.name|default:"-" }}</td>
                 <td>
-                    <a href="{% if object.owner %}{% url 'teacher' object.owner.pk %}{% endif %}" class="table__foreign-key">{{ object.owner }}</a>
+                    {% if object.owner %}<a href="{% url 'teacher' object.owner.pk %}" class="table__foreign-key">{{ object.owner }}</a>{% endif %}
+                </td>
+                <td>
+                    <a href="{% url 'test' object.pk %}" class="btn btn-table">изменить</a>
                 </td>
             </tr>
             {% endfor %}

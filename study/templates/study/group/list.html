@@ -19,6 +19,7 @@
                 <th>ID</th>
                 <th>Название</th>
                 <th>Владелец</th>
+                <th></th>
             </tr>
         </thead>
         <tbody>
@@ -30,6 +31,9 @@
                 <td>{{ object.name|default:"-" }}</td>
                 <td>
                     <a href="{% if object.owner %}{% url 'teacher' object.owner.pk %}{% endif %}" class="table__foreign-key">{{ object.owner.username }}</a>
+                </td>
+                <td>
+                    <a href="{% url 'group' object.pk %}" class="btn btn-table">изменить</a>
                 </td>
             </tr>
             {% endfor %}

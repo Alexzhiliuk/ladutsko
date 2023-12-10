@@ -2,7 +2,7 @@
 {% load static %}
 
 
-{% block page_title %}Предметы{% endblock %}
+{% block page_title %}Дисциплины{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/table.css' %}">
@@ -10,15 +10,16 @@
 
 {% block content %}
 <section >
-    <h1 class="h1">Предметы</h1>
-    <a href="{% url 'subject-add' %}" class="btn mt-40">Добавить</a>
+    <h1 class="h1">Дисциплины</h1>
+    <a href="{% url 'subject-add' %}" class="btn mt-40">Добавить</a> <a href="{% url 'subjects-upload' %}" class="btn mt-20">Загрузить</a>
     <div class="table-wrapper mt-40">
         <table class="table">
         <thead>
             <tr>
                 <th>ID</th>
                 <th>Название</th>
-                <th>Группа</th>
+                <th>Преподаватель</th>
+                <th>Группы</th>
             </tr>
         </thead>
         <tbody>
@@ -29,7 +30,15 @@
                 </td>
                 <td>{{ object.name|default:"-" }}</td>
                 <td>
-                    <a href="{% if object.group %}{% url 'group' object.group.pk %}{% endif %}" class="table__foreign-key">{{ object.group.id }}</a>
+                    {% if object.owner %}<a href="{% url 'teacher' object.owner.pk %}" class="table__foreign-key">{{ object.owner.username }}</a>{% endif %}
+                </td>
+                <td>
+                    {% for group in object.groups.all %}
+                    <a href="{% url 'group' group.pk %}" class="table__foreign-key">{{ group.id }}</a>,
+                    {% endfor %}
+                </td>
+                <td>
+                    <a href="{% url 'subject' object.id %}" class="btn btn-table">изменить</a>
                 </td>
             </tr>
             {% endfor %}

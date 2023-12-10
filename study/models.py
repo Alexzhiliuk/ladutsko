@@ -16,15 +16,18 @@ class Group(models.Model):
 
 
 class Subject(models.Model):
-    group = models.ForeignKey(Group, related_name="subjects", on_delete=models.CASCADE)
+    owner = models.ForeignKey(User, related_name="subjects", on_delete=models.CASCADE, null=True, blank=True)
+    groups = models.ManyToManyField(Group, blank=True)
     name = models.CharField(max_length=128)
 
     class Meta:
-        verbose_name = "Предмет"
-        verbose_name_plural = "Предметы"
+        verbose_name = "Дисциплина"
+        verbose_name_plural = "Дисциплины"
 
     def __str__(self):
-        return f"{self.name}: {self.group.name}"
+        if self.owner:
+            return f"{self.name}: {self.owner.username}"
+        return f"{self.name}"
 
 
 class LessonPhoto(models.Model):
@@ -41,7 +44,7 @@ class LessonPhoto(models.Model):
 
 
 class Test(models.Model):
-    owner = models.ForeignKey(User, related_name="tests", on_delete=models.CASCADE)
+    owner = models.ForeignKey(User, related_name="tests", on_delete=models.CASCADE, null=True, blank=True)
     name = models.CharField(max_length=128)
 
     class Meta:
@@ -108,7 +111,7 @@ class Answer(models.Model):
 
 
 class Lesson(models.Model):
-    subject = models.ForeignKey(Subject, related_name="lessons", on_delete=models.CASCADE)
+    subject = models.ForeignKey(Subject, related_name="lessons", on_delete=models.CASCADE, null=True, blank=True)
     name = models.CharField(max_length=128)
     video = models.FileField(upload_to="lessons/videos/", null=True, blank=True)
     photos = models.ManyToManyField(LessonPhoto, blank=True)
@@ -116,14 +119,20 @@ class Lesson(models.Model):
     text = models.TextField(null=True, blank=True)
 
     class Meta:
-        verbose_name = "Урок"
-        verbose_name_plural = "Уроки"
+        verbose_name = "Занятие"
+        verbose_name_plural = "Занятия"
 
     def __str__(self):
         return f"{self.name} ({self.subject})"
 
     def get_test_best_try(self):
         tries = [try_.score for try_ in Try.objects.filter(test=self.test)]
+        if tries:
+            return max(tries)
+        return 0
+
+    def get_test_user_best_try(self, user):
+        tries = [try_.score for try_ in Try.objects.filter(test=self.test, user=user)]
         if tries:
             return max(tries)
         return 0

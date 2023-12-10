@@ -37,6 +37,9 @@
                 <td>
                     <a href="#" class="table__foreign-key">{{ object.group_id }}</a>
                 </td>
+                <td>
+                    <a href="{% url 'application' object.id %}" class="btn btn-table">изменить</a>
+                </td>
             </tr>
             {% endfor %}
 

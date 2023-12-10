@@ -1,8 +1,11 @@
+import pandas as pd
+from datetime import datetime as dt
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
 from django.core.mail import send_mail
+from django.forms import model_to_dict
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.shortcuts import redirect, render
@@ -17,7 +20,7 @@ from .decorators.is_admin import admin_only
 from .decorators.is_not_student import not_student
 from .decorators.is_teacher import teacher_only
 from .forms import (
-    AdminProfileEditForm, GroupForm, SubjectForm, LessonForm, AdminTestForm, QuestionForm, AnswerForm, LessonPhotoForm
+    AdminProfileEditForm, GroupForm, SubjectForm, LessonForm, AdminTestForm, QuestionForm, AnswerForm, LessonPhotoForm, ExcelForm
 )
 from .models import Group, Subject, Lesson, LessonPhoto, Test, Question, Answer, Try
 
@@ -26,20 +29,19 @@ class IndexView(LoginRequiredMixin, View):
     menu = {
         "admin": {
             "Пользователи": {
-                "Учителя": reverse_lazy("teachers"),
-                "Ученики": reverse_lazy("students"),
+                "Преподаватели": reverse_lazy("teachers"),
+                "Студенты": reverse_lazy("students"),
             },
             "Заявки": reverse_lazy("applications"),
             "Группы": reverse_lazy("groups"),
-            "Предметы": reverse_lazy("subjects"),
-            "Уроки": reverse_lazy("lessons"),
+            "Дисциплины": reverse_lazy("subjects"),
+            "Занятия": reverse_lazy("lessons"),
             "Тесты": reverse_lazy("tests"),
         },
         "teacher": {
             "Моя группа": reverse_lazy("my-group"),
-            "Предметы": reverse_lazy("my-subjects"),
-            "Уроки": reverse_lazy("my-lessons"),
-            "Фото": reverse_lazy("my-photos"),
+            "Дисциплины": reverse_lazy("my-subjects"),
+            "Занятия": reverse_lazy("my-lessons"),
             "Тесты": reverse_lazy("my-tests"),
         }
     }
@@ -56,8 +58,7 @@ class IndexView(LoginRequiredMixin, View):
                 request,
                 "study/index.html",
                 {
-                    "menu": {subject.name: reverse_lazy("student-subject", kwargs={"pk": subject.pk})
-                             for subject in Subject.objects.filter(group=user.group_set.first())}
+                    "menu": {subject.name: reverse_lazy("student-subject", kwargs={"pk": subject.pk}) for subject in user.group_set.first().subject_set.all()}
                 }
             )
 
@@ -94,7 +95,7 @@ class TeacherEditView(LoginRequiredMixin, View):
             profile = profile_form.save()
 
             if group.owner and group.owner != user:
-                messages.error(request, f"У группы {group.name} уже есть учитель!")
+                messages.error(request, f"У группы {group.name} уже есть проподаватель!")
                 return redirect(reverse("teacher", kwargs={"pk": pk}))
 
             group.owner = profile.user
@@ -177,7 +178,7 @@ def delete_teacher(request, pk):
     teacher = get_object_or_404(User, pk=pk)
     username = teacher.username
     teacher.delete()
-    messages.success(request, f"Учитель {username} удален!")
+    messages.success(request, f"Преподаватель {username} удален!")
 
     return redirect(reverse("teachers"))
 
@@ -294,7 +295,7 @@ def delete_student(request, pk):
     student = get_object_or_404(User, pk=pk)
     username = student.username
     student.delete()
-    messages.success(request, f"Ученик {username} удален!")
+    messages.success(request, f"Студент {username} удален!")
 
     return redirect(reverse("students"))
 
@@ -338,7 +339,7 @@ def delete_application(request, pk):
     application = get_object_or_404(Application, pk=pk)
     email = application.email
     application.delete()
-    messages.success(request, f"Заявка от {email} удален!")
+    messages.success(request, f"Заявка от {email} удалена!")
 
     return redirect(reverse("applications"))
 
@@ -438,15 +439,24 @@ class SubjectEditView(LoginRequiredMixin, View):
         form = SubjectForm(instance=subject, data=request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, "Предмет успешно изменен")
+            messages.success(request, "Дисциплина успешно изменена")
 
         return redirect(reverse("subject", kwargs={"pk": pk}))
 
     def get(self, request, pk, *args, **kwargs):
         subject = get_object_or_404(Subject, pk=pk)
         form = SubjectForm(instance=subject)
+        teachers = User.objects.filter(profile__type=2)
         groups = Group.objects.all()
-        return render(request, "study/subjects/edit.html", {"form": form, "subject": subject, "groups": groups})
+        return render(
+            request, "study/subjects/edit.html",
+            {
+                "form": form,
+                "subject": subject,
+                "teachers": teachers,
+                "groups": groups
+            }
+        )
 
 
 @method_decorator(admin_only, name="dispatch")
@@ -455,14 +465,23 @@ class SubjectCreateView(LoginRequiredMixin, View):
         form = SubjectForm(data=request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, "Предмет успешно создан")
+            messages.success(request, "Дисциплина успешно создана")
 
         return redirect(reverse("subjects"))
 
     def get(self, request, *args, **kwargs):
         form = SubjectForm()
+        teachers = User.objects.filter(profile__type=2)
         groups = Group.objects.all()
-        return render(request, "study/subjects/add.html", {"form": form, "groups": groups})
+        return render(
+            request,
+            "study/subjects/add.html",
+            {
+                "form": form,
+                "teachers": teachers,
+                "groups": groups
+            }
+        )
 
 
 @not_student
@@ -471,7 +490,7 @@ def delete_subject(request, pk):
     subject = get_object_or_404(Subject, pk=pk)
     name = subject.name
     subject.delete()
-    messages.success(request, f"Предмет {name} удален!")
+    messages.success(request, f"Дисциплина {name} удалена!")
 
     return redirect(reverse("subjects"))
 
@@ -489,7 +508,15 @@ class LessonEditView(LoginRequiredMixin, View):
         lesson = get_object_or_404(Lesson, pk=pk)
         form = LessonForm(instance=lesson, data=request.POST, files=request.FILES)
         if form.is_valid():
-            form.save()
+            photo_field = form.cleaned_data.get("photo")
+            if photo_field:
+                lesson.photos.clear()
+                photo = LessonPhoto(owner=request.user, name=photo_field.name, photo=photo_field)
+                photo.save()
+                new_lesson = form.save()
+                new_lesson.photos.add(photo)
+            else:
+                form.save()
             messages.success(request, "Урок изменен!")
         return redirect(reverse("lesson", kwargs={"pk": pk}))
 
@@ -498,14 +525,14 @@ class LessonEditView(LoginRequiredMixin, View):
         form = LessonForm(instance=lesson)
         subjects = Subject.objects.all()
         tests = Test.objects.all()
-        photos = LessonPhoto.objects.filter(owner=lesson.subject.group.owner)
+        photo = lesson.photos.first()
 
         return render(request, "study/lesson/edit.html", {
             "form": form,
             "lesson": lesson,
             "subjects": subjects,
             "tests": tests,
-            "photos": photos
+            "photo": photo
         })
 
 
@@ -514,7 +541,14 @@ class LessonCreateView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         form = LessonForm(data=request.POST, files=request.FILES)
         if form.is_valid():
-            form.save()
+            photo_field = form.cleaned_data.get("photo")
+            if photo_field:
+                photo = LessonPhoto(owner=request.user, name=photo_field.name, photo=photo_field)
+                photo.save()
+                new_lesson = form.save()
+                new_lesson.photos.add(photo)
+            else:
+                form.save()
             messages.success(request, "Урок создан!")
         return redirect(reverse("lessons"))
 
@@ -539,7 +573,7 @@ def delete_lesson(request, pk):
     lesson = get_object_or_404(Lesson, pk=pk)
     name = lesson.name
     lesson.delete()
-    messages.success(request, f"Урок {name} удален!")
+    messages.success(request, f"Занятие {name} удалено!")
 
     return redirect(reverse("lessons"))
 
@@ -578,13 +612,14 @@ class TestCreateView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         form = AdminTestForm(request.POST)
         if form.is_valid():
-            form.save()
-            messages.success(request, "Тест создан!")
-        elif request.user.profile.type == 2:
-            name = request.POST.get("name")
-            Test.objects.create(owner=request.user, name=name)
-            messages.success(request, "Тест создан!")
-            return redirect(reverse("my-tests"))
+            if request.user.profile.type == 2:
+                name = request.POST.get("name")
+                Test.objects.create(owner=request.user, name=name)
+                messages.success(request, "Тест создан!")
+                return redirect(reverse("my-tests"))
+            else:
+                form.save()
+                messages.success(request, "Тест создан!")
 
         return redirect(reverse("tests"))
 
@@ -725,6 +760,11 @@ class MyGroupListView(LoginRequiredMixin, ListView):
             return students
         return []
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["group"] = self.request.user.study_groups.first()
+        return context
+
 
 @method_decorator(teacher_only, name="dispatch")
 class MyGroupCreateView(LoginRequiredMixin, View):
@@ -752,15 +792,35 @@ def exclude_student(request, pk):
     return redirect(reverse("my-group"))
 
 
+@not_student
+def add_subject_to_group(request, subject_id):
+    subject = get_object_or_404(Subject, pk=subject_id)
+    group = request.user.study_groups.first()
+    if not group:
+        messages.error(request, "У вас нет группы!")
+        return redirect(reverse("my-group"))
+    subject.groups.add(group)
+    messages.success(request, "Дисциплина добавлена в вашу группу")
+    return redirect(reverse("my-group"))
+
+
+@not_student
+def remove_subject_from_group(request, subject_id):
+    subject = get_object_or_404(Subject, pk=subject_id)
+    group = request.user.study_groups.first()
+    if not group:
+        messages.error(request, "У вас нет группы!")
+        return redirect(reverse("my-group"))
+    subject.groups.remove(group)
+    messages.success(request, "Дисциплина удалена из вашей группы")
+    return redirect(reverse("my-group"))
+
+
 @method_decorator(teacher_only, name="dispatch")
 class MySubjectsListView(LoginRequiredMixin, ListView):
     model = Subject
     context_object_name = "objects"
     template_name = "study/teacher/my_subjects.html"
-
-    def get_queryset(self):
-        qs = super().get_queryset()
-        return qs.filter(group__owner=self.request.user)
 
 
 @method_decorator(teacher_only, name="dispatch")
@@ -772,8 +832,8 @@ class MySubjectCreateView(LoginRequiredMixin, View):
             messages.error(request, "У вас нет своей группы!")
             return redirect(reverse("index"))
 
-        Subject.objects.create(name=subject_name, group=group)
-        messages.success(request, "Предмет создан!")
+        Subject.objects.create(name=subject_name, owner=request.user)
+        messages.success(request, "Дисциплина создана!")
         return redirect(reverse("my-subjects"))
 
     def get(self, request, *args, **kwargs):
@@ -805,7 +865,7 @@ class MyLessonsListView(LoginRequiredMixin, ListView):
     template_name = "study/teacher/my_lessons.html"
 
     def get_queryset(self):
-        qs = super().get_queryset().filter(subject__group__owner=self.request.user)
+        qs = super().get_queryset().filter(subject__owner=self.request.user)
         objects = {}
         for lesson in qs:
             subject = lesson.subject
@@ -821,8 +881,15 @@ class MyLessonCreateView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         form = LessonForm(data=request.POST, files=request.FILES)
         if form.is_valid():
-            form.save()
-            messages.success(request, "Урок создан")
+            photo_field = form.cleaned_data.get("photo")
+            if photo_field:
+                photo = LessonPhoto(owner=request.user, name=photo_field.name, photo=photo_field)
+                photo.save()
+                new_lesson = form.save()
+                new_lesson.photos.add(photo)
+            else:
+                form.save()
+            messages.success(request, "Занятие создано")
 
         return redirect(reverse("my-lessons"))
 
@@ -831,7 +898,7 @@ class MyLessonCreateView(LoginRequiredMixin, View):
         form = LessonForm()
         tests = user.tests.all()
         photos = user.lesson_photos.all()
-        subjects = user.study_groups.first().subjects.all()
+        subjects = user.subjects.all()
         return render(request, "study/teacher/create-lesson.html", {
             "form": form,
             "tests": tests,
@@ -846,8 +913,16 @@ class MyLessonEditView(LoginRequiredMixin, View):
         lesson = get_object_or_404(Lesson, pk=kwargs["pk"])
         form = LessonForm(instance=lesson, data=request.POST, files=request.FILES)
         if form.is_valid():
-            form.save()
-            messages.success(request, "Урок изменен")
+            photo_field = form.cleaned_data.get("photo")
+            if photo_field:
+                lesson.photos.clear()
+                photo = LessonPhoto(owner=request.user, name=photo_field.name, photo=photo_field)
+                photo.save()
+                new_lesson = form.save()
+                new_lesson.photos.add(photo)
+            else:
+                form.save()
+            messages.success(request, "Занятие изменено")
 
         return redirect(reverse("my-lesson", kwargs=kwargs))
 
@@ -856,12 +931,12 @@ class MyLessonEditView(LoginRequiredMixin, View):
         user = request.user
         form = LessonForm(instance=lesson)
         tests = user.tests.all()
-        photos = user.lesson_photos.all()
-        subjects = user.study_groups.first().subjects.all()
+        photo = lesson.photos.first()
+        subjects = user.subjects.all()
         return render(request, "study/teacher/edit-lesson.html", {
             "form": form,
             "tests": tests,
-            "photos": photos,
+            "photo": photo,
             "subjects": subjects,
             "lesson": lesson,
         })
@@ -941,7 +1016,8 @@ class StudentSubjectView(LoginRequiredMixin, View):
 
         if not user.group_set.first():
             return HttpResponse("No permission")
-        if user.group_set.first().pk != subject.group.pk:
+        print(user.group_set.first(), subject.groups.all())
+        if user.group_set.first() not in subject.groups.all():
             return HttpResponse("No permission")
 
         return render(request, "study/student/subject.html", {
@@ -958,11 +1034,16 @@ class StudentLessonView(LoginRequiredMixin, View):
 
         if not user.group_set.first():
             return HttpResponse("No permission")
-        if user.group_set.first().pk != lesson.subject.group.pk:
+        if user.group_set.first() not in lesson.subject.groups.all():
             return HttpResponse("No permission")
+
+        my_best_try = 0
+        if lesson.test:
+            my_best_try = lesson.get_test_user_best_try(user)
 
         return render(request, "study/student/lesson.html", {
             "lesson": lesson,
+            "best_try": my_best_try,
         })
 
 
@@ -972,8 +1053,6 @@ class StudentTestView(LoginRequiredMixin, View):
         test = get_object_or_404(Test, pk=kwargs["pk"])
 
         if not user.group_set.first():
-            return HttpResponse("No permission")
-        if user.group_set.first().owner != test.owner:
             return HttpResponse("No permission")
 
         score = test.calculate_score(request.POST)
@@ -988,9 +1067,73 @@ class StudentTestView(LoginRequiredMixin, View):
 
         if not user.group_set.first():
             return HttpResponse("No permission")
-        if user.group_set.first().owner != test.owner:
-            return HttpResponse("No permission")
 
         return render(request, "study/student/test.html", {
             "test": test,
         })
+
+
+@not_student
+def download_test_tries(request, test_id):
+    test = get_object_or_404(Test, pk=test_id)
+    queryset = Try.objects.filter(test=test)
+    data = [{"студент": instance.user.username, "балл": instance.score} for instance in queryset]
+
+    df = pd.DataFrame(data)
+
+    response = HttpResponse(content_type='application/xlsx')
+    response['Content-Disposition'] = f'attachment; filename="{test.name}_{str(dt.now())}.xlsx"'
+
+    with pd.ExcelWriter(response) as writer:
+        df.to_excel(writer, sheet_name=f'Результаты теста {test.name}')
+
+    return response
+
+
+class UploadSubjectsView(LoginRequiredMixin, View):
+
+    def post(self, request, *args, **kwargs):
+        form = ExcelForm(request.POST, request.FILES)
+        if form.is_valid():
+            df = pd.read_excel(request.FILES['excel'], names=["name", "owner"])
+            for index, row in df.iterrows():
+                name, owner = row["name"], User.objects.filter(username=row["owner"]).first()
+                if not(pd.isna(name)) and owner:
+                    Subject.objects.get_or_create(name=name, owner=owner)
+                elif not(pd.isna(name)):
+                    Subject.objects.get_or_create(name=name)
+            messages.success(request, "Дисциплины успешно загружены")
+
+        return redirect(reverse("subjects"))
+
+    def get(self, request, *args, **kwargs):
+        form = ExcelForm()
+        return render(request, "study/subjects/upload.html", {"form": form})
+
+
+class UploadLessonsView(LoginRequiredMixin, View):
+
+    def post(self, request, *args, **kwargs):
+        form = ExcelForm(request.POST, request.FILES)
+        if form.is_valid():
+            df = pd.read_excel(request.FILES['excel'], names=["name", "text", "subject"])
+            for index, row in df.iterrows():
+
+                subject = None if pd.isna(row["subject"]) else Subject.objects.filter(id=row["subject"]).first()
+                name = None if pd.isna(row["name"]) else row["name"]
+                text = None if pd.isna(row["text"]) else row["text"]
+
+                if name:
+                    Lesson.objects.get_or_create(name=name, text=text, subject=subject)
+
+            messages.success(request, "Занятия успешно загружены")
+
+        return redirect(reverse("lessons"))
+
+    def get(self, request, *args, **kwargs):
+        form = ExcelForm()
+        return render(request, "study/lesson/upload.html", {"form": form})
+
+
+def about(request):
+    return render(request, "study/about.html")

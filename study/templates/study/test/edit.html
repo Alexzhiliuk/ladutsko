@@ -11,6 +11,11 @@
 {% endblock %}
 
 {% block content %}
+{% if user.profile.type == 1 %}
+<a href="{% url 'tests' %}" class="back">назад</a>
+{% else %}
+<a href="{% url 'my-tests' %}" class="back">назад</a>
+{% endif %}
 <section class="section-teachers">
     <h1 class="h1 h1_center">Тест</h1>
 
@@ -113,6 +118,7 @@
             </tbody>
         </table>
     </div>
+    <a href="{% url 'test-download-tries' test.id %}" class="btn mt-40">download</a>
 </section>
 
 <script>

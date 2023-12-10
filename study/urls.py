@@ -27,11 +27,13 @@ urlpatterns = [
     path("subject/<int:pk>/", views.SubjectEditView.as_view(), name="subject"),
     path("subject/delete/<int:pk>/", views.delete_subject, name="subject-delete"),
     path("subject/add/", views.SubjectCreateView.as_view(), name="subject-add"),
+    path("subjects/upload/", views.UploadSubjectsView.as_view(), name="subjects-upload"),
 
     path("lessons/", views.LessonsListView.as_view(), name="lessons"),
     path("lesson/<int:pk>/", views.LessonEditView.as_view(), name="lesson"),
     path("lesson/delete/<int:pk>/", views.delete_lesson, name="lesson-delete"),
     path("lesson/add/", views.LessonCreateView.as_view(), name="lesson-add"),
+    path("lesson/upload/", views.UploadLessonsView.as_view(), name="lessons-upload"),
 
     path("photo/delete/<int:pk>/", views.delete_photo, name="photo-delete"),
 
@@ -42,6 +44,7 @@ urlpatterns = [
     path("test/<int:pk>/question/add/", views.TestQuestionCreateView.as_view(), name="test-question-add"),
     path("test/<int:test_pk>/question/<int:question_pk>/", views.TestQuestionEditView.as_view(), name="test-question"),
     path("test/<int:test_pk>/question/<int:question_pk>/delete", views.delete_question, name="test-question-delete"),
+    path("test/<int:test_id>/download-tries/", views.download_test_tries, name="test-download-tries"),
 
     path("question/<int:pk>/add-answer-variant/", views.add_answer_variant, name="add-answer-variant"),
     path("question/<int:pk>/add-correct-text-answer/", views.add_correct_text_answer, name="add-correct-text-answer"),
@@ -61,8 +64,12 @@ urlpatterns = [
     path("teacher/my-photo/<int:pk>/", views.MyPhotoEditView.as_view(), name="my-photo"),
     path("teacher/my-tests/", views.MyTestsListView.as_view(), name="my-tests"),
 
+    path("subject/<int:subject_id>/remove-from-group/", views.remove_subject_from_group, name="remove-subject-from-group"),
+    path("subject/<int:subject_id>/add-to-group/", views.add_subject_to_group, name="add-subject-to-group"),
+
     path("student/subject/<int:pk>/", views.StudentSubjectView.as_view(), name="student-subject"),
     path("student/lesson/<int:pk>/", views.StudentLessonView.as_view(), name="student-lesson"),
     path("student/test/<int:pk>/", views.StudentTestView.as_view(), name="student-test"),
 
+    path("about/", views.about, name="about"),
 ]

@@ -41,8 +41,8 @@ class GroupForm(forms.ModelForm):
 class SubjectForm(forms.ModelForm):
     class Meta:
         model = Subject
-        fields = ("name", "group")
-        labels = {"name": "Название", "group": "Группа"}
+        fields = ("name", "owner", "groups")
+        labels = {"name": "Название", "owner": "Преподаватель", "groups": "Группы"}
 
     def __init__(self, *args, **kwargs):
         super(SubjectForm, self).__init__(*args, **kwargs)
@@ -52,10 +52,13 @@ class SubjectForm(forms.ModelForm):
 
 
 class LessonForm(forms.ModelForm):
+
+    photo = forms.ImageField(label="Фото", required=False)
+
     class Meta:
         model = Lesson
-        fields = ("name", "subject", "test", "video", "photos", "text")
-        labels = {"name": "Название", "subject": "Предмет", "test": "Тест", "video": "Видео", "photos": "Фото", "text": "Текст"}
+        fields = ("name", "subject", "test", "video", "text")
+        labels = {"name": "Название", "subject": "Дисциплина", "test": "Тест", "video": "Видео", "text": "Текст"}
 
     def __init__(self, *args, **kwargs):
         super(LessonForm, self).__init__(*args, **kwargs)
@@ -130,6 +133,16 @@ class LessonPhotoForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(LessonPhotoForm, self).__init__(*args, **kwargs)
+
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form__input'
+
+
+class ExcelForm(forms.Form):
+    excel = forms.FileField(label="Excel файл")
+
+    def __init__(self, *args, **kwargs):
+        super(ExcelForm, self).__init__(*args, **kwargs)
 
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form__input'

@@ -3,7 +3,7 @@
 {% load static %}
 
 
-{% block page_title %}Учитель{% endblock %}
+{% block page_title %}Преподаватель{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/select.css' %}">
@@ -11,7 +11,8 @@
 
 {% block content %}
 <section class="section-teachers">
-    <h1 class="h1 h1_center">Учитель</h1>
+    <a href="{% url 'teachers' %}" class="back">назад</a>
+    <h1 class="h1 h1_center">Преподаватель</h1>
 
     <form action="." method="POST" class="form mt-40">
         {% csrf_token %}
