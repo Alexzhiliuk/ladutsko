@@ -19,13 +19,9 @@ from accounts.models import Application
 from .decorators.is_admin import admin_only
 from .decorators.is_not_student import not_student
 from .decorators.is_teacher import teacher_only
-<<<<<<< HEAD
-from .forms import (AdminProfileEditForm, GroupForm, SubjectForm, LessonForm, AdminTestForm, QuestionForm, AnswerForm, LessonPhotoForm, ExcelForm)
-=======
 from .forms import (
-    AdminProfileEditForm, GroupForm, SubjectForm, LessonForm, AdminTestForm, QuestionForm, AnswerForm, LessonPhotoForm
+    AdminProfileEditForm, GroupForm, SubjectForm, LessonForm, AdminTestForm, QuestionForm, AnswerForm, LessonPhotoForm, ExcelForm
 )
->>>>>>> main
 from .models import Group, Subject, Lesson, LessonPhoto, Test, Question, Answer, Try
 
 
@@ -62,12 +58,7 @@ class IndexView(LoginRequiredMixin, View):
                 request,
                 "study/index.html",
                 {
-<<<<<<< HEAD
                     "menu": {subject.name: reverse_lazy("student-subject", kwargs={"pk": subject.pk}) for subject in user.group_set.first().subject_set.all()}
-=======
-                    "menu": {subject.name: reverse_lazy("student-subject", kwargs={"pk": subject.pk})
-                             for subject in Subject.objects.filter(group=user.group_set.first())}
->>>>>>> main
                 }
             )
 
