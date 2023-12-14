@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 
 class Group(models.Model):
     owner = models.ForeignKey(User, related_name="study_groups", on_delete=models.SET_NULL, null=True)
-    name = models.CharField(max_length=128)
+    number = models.CharField(max_length=32)
     students = models.ManyToManyField(User, blank=True)
 
     class Meta:
@@ -12,7 +12,7 @@ class Group(models.Model):
         verbose_name_plural = "Группы"
 
     def __str__(self):
-        return f"{self.id}: {self.name}"
+        return self.number
 
 
 class Subject(models.Model):

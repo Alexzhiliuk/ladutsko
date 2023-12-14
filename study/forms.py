@@ -22,8 +22,8 @@ class AdminProfileEditForm(ProfileEditForm):
 class GroupForm(forms.ModelForm):
     class Meta:
         model = Group
-        fields = ("name", )
-        labels = {"name": "Название"}
+        fields = ("number", )
+        labels = {"number": "Номер группы"}
 
     def __init__(self, *args, **kwargs):
         super(GroupForm, self).__init__(*args, **kwargs)

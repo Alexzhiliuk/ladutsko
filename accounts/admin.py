@@ -10,5 +10,5 @@ class ProfileAdmin(admin.ModelAdmin):
 
 @admin.register(Application)
 class ApplicationAdmin(admin.ModelAdmin):
-    list_display = ["email", "first_name", "last_name", "middle_name", "group_id"]
+    list_display = ["email", "first_name", "last_name", "middle_name", "group_number"]
 

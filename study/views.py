@@ -318,11 +318,11 @@ class ApplicationView(LoginRequiredMixin, View):
         })
         profile_form = AdminProfileEditForm(initial={
             "middle_name": application.middle_name,
-            "group": application.group_id
+            "group": application.group_number
         })
         groups = Group.objects.all()
 
-        if not(Group.objects.filter(id=application.group_id).first()):
+        if not(Group.objects.filter(number=application.group_number).first()):
             messages.error(request, "Пользователь указал несуществующую группу!")
 
         return render(request, "study/application.html", {
