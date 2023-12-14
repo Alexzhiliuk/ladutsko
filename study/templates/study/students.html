@@ -17,7 +17,6 @@
         <table class="table">
         <thead>
             <tr>
-                <th>ID</th>
                 <th>Имя</th>
                 <th>Фамилия</th>
                 <th>Отчество</th>
@@ -29,15 +28,14 @@
         <tbody>
             {% for user in objects %}
             <tr>
-                <td>
-                    <a href="{% url 'student' user.id %}" class="table__object-url">{{ user.id }}</a>
-                </td>
                 <td>{{ user.first_name|default:"-" }}</td>
                 <td>{{ user.last_name|default:"-" }}</td>
                 <td>{{ user.profile.middle_name|default_if_none:"-" }}</td>
                 <td>{{ user.email|default:"-" }}</td>
                 <td>
-                    <a href="#" class="table__foreign-key">{{ user.group_set.first.id }}</a>
+                    {% if user.group_set.first %}
+                    <a href="{% url 'group' user.group_set.first.number %}" class="table__foreign-key">{{ user.group_set.first|default_if_none:"" }}</a>
+                    {% endif %}
                 </td>
                 <td>
                     <a href="{% url 'student' user.id %}" class="btn btn-table">изменить</a>

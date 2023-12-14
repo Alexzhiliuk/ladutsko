@@ -273,7 +273,7 @@ class StudentCreateView(LoginRequiredMixin, View):
                 print(err)
                 messages.error(request, "Не получилось отправить письмо на почту")
 
-            messages.success(request, "Пользователь успешно создан!")
+            messages.success(request, "Студент успешно создан!")
             return redirect(reverse("students"))
 
         return redirect(reverse("student-add"))
