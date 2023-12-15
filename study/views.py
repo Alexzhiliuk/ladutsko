@@ -14,13 +14,13 @@ from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.generic import ListView
 
-from accounts.forms import UserEditForm, UserCreateForm
+from accounts.forms import UserEditForm, UserCreateForm, ProfileEditForm
 from accounts.models import Application
 from .decorators.is_admin import admin_only
 from .decorators.is_not_student import not_student
 from .decorators.is_teacher import teacher_only
 from .forms import (
-    AdminProfileEditForm, GroupForm, SubjectForm, LessonForm, AdminTestForm, QuestionForm, AnswerForm, LessonPhotoForm, ExcelForm
+    GroupForm, SubjectForm, LessonForm, AdminTestForm, QuestionForm, AnswerForm, LessonPhotoForm, ExcelForm
 )
 from .models import Group, Subject, Lesson, LessonPhoto, Test, Question, Answer, Try
 
@@ -85,7 +85,7 @@ class TeacherEditView(LoginRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
         teacher = get_object_or_404(User, pk=pk)
         user_form = UserEditForm(instance=teacher, data=request.POST)
-        profile_form = AdminProfileEditForm(instance=teacher.profile, data=request.POST)
+        profile_form = ProfileEditForm(instance=teacher.profile, data=request.POST)
         if user_form.is_valid() and profile_form.is_valid():
             user = user_form.save()
             user.username = user.email
@@ -101,23 +101,18 @@ class TeacherEditView(LoginRequiredMixin, View):
             group.owner = profile.user
             group.save()
 
-            messages.success(request, "Пользователь успешно изменен!")
+            messages.success(request, "Преподаватель успешно изменен!")
 
         return redirect(reverse("teacher", kwargs={"pk": pk}))
 
     def get(self, request, pk, *args, **kwargs):
         teacher = get_object_or_404(User, pk=pk)
         user_form = UserEditForm(instance=teacher)
-        profile_form = AdminProfileEditForm(instance=teacher.profile)
-
-        teacher_group = teacher.study_groups.first()
-        groups = Group.objects.all()
+        profile_form = ProfileEditForm(instance=teacher.profile)
 
         return render(request, "study/teacher-edit.html", {
             "user_form": user_form,
             "profile_form": profile_form,
-            "teacher_group": teacher_group,
-            "groups": groups,
             "teacher": teacher,
         })
 
@@ -126,7 +121,7 @@ class TeacherEditView(LoginRequiredMixin, View):
 class TeacherCreateView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         user_form = UserCreateForm(request.POST)
-        profile_form = AdminProfileEditForm(request.POST)
+        profile_form = ProfileEditForm(request.POST)
 
         if user_form.is_valid() and profile_form.is_valid():
 
@@ -141,11 +136,6 @@ class TeacherCreateView(LoginRequiredMixin, View):
             profile.type = 2
             profile.save()
 
-            group = profile_form.cleaned_data.get("group")
-            if group:
-                group.owner = new_user
-                group.save()
-
             try:
                 send_mail(
                     "Данные для входа",
@@ -156,19 +146,17 @@ class TeacherCreateView(LoginRequiredMixin, View):
                 print(err)
                 messages.error(request, "Не получилось отправить письмо на почту")
 
-            messages.success(request, "Пользователь успешно создан!")
+            messages.success(request, "Преподаватель успешно создан!")
             return redirect(reverse("teachers"))
 
         return redirect(reverse("teacher-add"))
 
     def get(self, request, *args, **kwargs):
         user_form = UserCreateForm()
-        profile_form = AdminProfileEditForm()
-        groups = Group.objects.all()
+        profile_form = ProfileEditForm()
         return render(request, "study/teacher-add.html", {
             "user_form": user_form,
             "profile_form": profile_form,
-            "groups": groups,
         })
 
 
