@@ -5,7 +5,7 @@ from .models import Group, Subject, Lesson, LessonPhoto, Test, Question, Answer,
 
 @admin.register(Group)
 class GroupAdmin(admin.ModelAdmin):
-    list_display = ["id", "number", "owner"]
+    list_display = ["id", "number"]
 
 
 @admin.register(Subject)

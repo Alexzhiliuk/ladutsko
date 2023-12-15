@@ -31,12 +31,6 @@ class GroupForm(forms.ModelForm):
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form__input'
 
-        self.fields['owner'] = forms.ModelChoiceField(
-            queryset=User.objects.filter(profile__type=2).all(),
-            label='Владелец',
-        )
-        self.fields['owner'].required = False
-
 
 class SubjectForm(forms.ModelForm):
     class Meta:

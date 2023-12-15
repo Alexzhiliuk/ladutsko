@@ -357,26 +357,7 @@ class GroupEditView(LoginRequiredMixin, View):
         group = get_object_or_404(Group, pk=pk)
         form = GroupForm(instance=group, data=request.POST)
         if form.is_valid():
-            new_owner = form.cleaned_data.get("owner")
-
-            if new_owner == group.owner:
-                form.save()
-            elif new_owner:
-                if not (new_owner.study_groups.first()):
-                    group = form.save(commit=False)
-                    group.owner = new_owner
-                    group.save()
-                else:
-                    form.save()
-                    messages.error(
-                        request,
-                        f"Учитель {new_owner} уже является владельцем группы {new_owner.study_groups.first()}"
-                    )
-            else:
-                group = form.save(commit=False)
-                group.owner = None
-                group.save()
-
+            form.save()
             messages.success(request, "Группа успешно изменена!")
         return redirect(reverse("group", kwargs={"pk": pk}))
 
@@ -393,17 +374,8 @@ class GroupCreateView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         form = GroupForm(request.POST)
         if form.is_valid():
-            owner = form.cleaned_data.get("owner")
-            if owner:
-                if owner.study_groups.first():
-                    messages.error(request, f"Учитель {owner} уже владеет группой {owner.study_groups.first()}!")
-                    return redirect(reverse("group-add"))
-                new_group = form.save(commit=False)
-                new_group.owner = owner
-                new_group.save()
-            else:
-                form.save()
 
+            form.save()
             messages.success(request, "Группа успешно создана!")
 
         return redirect(reverse("groups"))
@@ -418,9 +390,9 @@ class GroupCreateView(LoginRequiredMixin, View):
 def delete_group(request, pk):
 
     group = get_object_or_404(Group, pk=pk)
-    name = group.name
+    number = group.number
     group.delete()
-    messages.success(request, f"Группа {name} удалена!")
+    messages.success(request, f"Группа {number} удалена!")
 
     return redirect(reverse("groups"))
 
