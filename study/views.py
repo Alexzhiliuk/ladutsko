@@ -20,7 +20,7 @@ from .decorators.is_admin import admin_only
 from .decorators.is_not_student import not_student
 from .decorators.is_teacher import teacher_only
 from .forms import (
-    GroupForm, SubjectForm, LessonForm, AdminTestForm, QuestionForm, AnswerForm, LessonPhotoForm, ExcelForm
+    StudentForm, GroupForm, SubjectForm, LessonForm, AdminTestForm, QuestionForm, AnswerForm, LessonPhotoForm, ExcelForm
 )
 from .models import Group, Subject, Lesson, LessonPhoto, Test, Question, Answer, Try
 
@@ -188,7 +188,7 @@ class StudentEditView(LoginRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
         student = get_object_or_404(User, pk=pk)
         user_form = UserEditForm(instance=student, data=request.POST)
-        profile_form = AdminProfileEditForm(instance=student.profile, data=request.POST)
+        profile_form = StudentForm(instance=student.profile, data=request.POST)
         if user_form.is_valid() and profile_form.is_valid():
             user = user_form.save()
             user.username = user.email
@@ -214,7 +214,7 @@ class StudentEditView(LoginRequiredMixin, View):
     def get(self, request, pk, *args, **kwargs):
         student = get_object_or_404(User, pk=pk)
         user_form = UserEditForm(instance=student)
-        profile_form = AdminProfileEditForm(instance=student.profile)
+        profile_form = StudentForm(instance=student.profile)
 
         student_group = student.group_set.first()
         groups = Group.objects.all()
@@ -232,7 +232,7 @@ class StudentEditView(LoginRequiredMixin, View):
 class StudentCreateView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         user_form = UserCreateForm(request.POST)
-        profile_form = AdminProfileEditForm(request.POST)
+        profile_form = StudentForm(request.POST)
 
         if user_form.is_valid() and profile_form.is_valid():
 
@@ -268,7 +268,7 @@ class StudentCreateView(LoginRequiredMixin, View):
 
     def get(self, request, *args, **kwargs):
         user_form = UserCreateForm()
-        profile_form = AdminProfileEditForm()
+        profile_form = StudentForm()
         groups = Group.objects.all()
         return render(request, "study/student-add.html", {
             "user_form": user_form,
