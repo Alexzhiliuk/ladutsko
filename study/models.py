@@ -15,8 +15,7 @@ class Group(models.Model):
 
 
 class Subject(models.Model):
-    owner = models.ForeignKey(User, related_name="subjects", on_delete=models.CASCADE, null=True, blank=True)
-    groups = models.ManyToManyField(Group, blank=True)
+
     name = models.CharField(max_length=128)
 
     class Meta:
@@ -24,9 +23,20 @@ class Subject(models.Model):
         verbose_name_plural = "Дисциплины"
 
     def __str__(self):
-        if self.owner:
-            return f"{self.name}: {self.owner.username}"
-        return f"{self.name}"
+        return self.name
+
+
+class TeacherGroupSubject(models.Model):
+    teacher = models.ForeignKey(User, related_name="subjects", on_delete=models.CASCADE)
+    subject = models.ForeignKey(Subject, related_name="items", on_delete=models.CASCADE)
+    group = models.ForeignKey(Group, related_name="subjects", on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name = "Дисциплина группы"
+        verbose_name_plural = "Дисциплины групп"
+
+    def __str__(self):
+        return f"{self.subject.name}, группа {self.group.number}, преподаватель {self.teacher}"
 
 
 class LessonPhoto(models.Model):

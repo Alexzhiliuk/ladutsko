@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Group, Subject, Lesson, LessonPhoto, Test, Question, Answer, Try
+from .models import Group, Subject, TeacherGroupSubject, Lesson, LessonPhoto, Test, Question, Answer, Try
 
 
 @admin.register(Group)
@@ -10,7 +10,12 @@ class GroupAdmin(admin.ModelAdmin):
 
 @admin.register(Subject)
 class SubjectAdmin(admin.ModelAdmin):
-    list_display = ["name", "owner"]
+    list_display = ["name"]
+
+
+@admin.register(TeacherGroupSubject)
+class TeacherGroupSubjectAdmin(admin.ModelAdmin):
+    list_display = ["teacher", "subject", "group"]
 
 
 @admin.register(Lesson)

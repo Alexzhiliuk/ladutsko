@@ -22,6 +22,8 @@ urlpatterns = [
     path("group/<int:pk>/", views.GroupEditView.as_view(), name="group"),
     path("group/delete/<int:pk>/", views.delete_group, name="group-delete"),
     path("group/add/", views.GroupCreateView.as_view(), name="group-add"),
+    path("group/<int:pk>/add-subject", views.TeacherGroupSubjectCreateView.as_view(), name="group-add-subject"),
+    path("group/<int:pk>/remove-subject", views.delete_teacher_group_subject, name="group-remove-subject"),
 
     path("subjects/", views.SubjectsListView.as_view(), name="subjects"),
     path("subject/<int:pk>/", views.SubjectEditView.as_view(), name="subject"),

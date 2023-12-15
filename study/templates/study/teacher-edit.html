@@ -7,6 +7,7 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/select.css' %}">
+<link rel="stylesheet" href="{% static 'css/table.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -41,6 +42,25 @@
         </div>
 
     </form>
+
+    <div class="table-wrapper mt-40">
+        <table class="table mt-40">
+            <thead>
+                <tr>
+                    <th>Дисциплина</th>
+                    <th>Группа</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for subject in teacher.subjects.all %}
+                <tr>
+                    <td>{{ subject.subject }}</td>
+                    <td>{{ subject.group }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
 </section>
 

@@ -20,9 +20,10 @@ from .decorators.is_admin import admin_only
 from .decorators.is_not_student import not_student
 from .decorators.is_teacher import teacher_only
 from .forms import (
-    StudentForm, GroupForm, SubjectForm, LessonForm, AdminTestForm, QuestionForm, AnswerForm, LessonPhotoForm, ExcelForm
+    StudentForm, GroupForm, SubjectForm, LessonForm, AdminTestForm, QuestionForm, AnswerForm, LessonPhotoForm,
+    ExcelForm, TeacherGroupSubjectForm
 )
-from .models import Group, Subject, Lesson, LessonPhoto, Test, Question, Answer, Try
+from .models import Group, TeacherGroupSubject, Subject, Lesson, LessonPhoto, Test, Question, Answer, Try
 
 
 class IndexView(LoginRequiredMixin, View):
@@ -304,7 +305,7 @@ class ApplicationView(LoginRequiredMixin, View):
             "last_name": application.last_name,
             "email": application.email
         })
-        profile_form = AdminProfileEditForm(initial={
+        profile_form = StudentForm(initial={
             "middle_name": application.middle_name,
             "group": application.group_number
         })
@@ -333,6 +334,31 @@ def delete_application(request, pk):
 
 
 @method_decorator(admin_only, name="dispatch")
+class TeacherGroupSubjectCreateView(LoginRequiredMixin, View):
+    def post(self, request, pk, *args, **kwargs):
+        group = get_object_or_404(Group, pk=pk)
+        form = TeacherGroupSubjectForm(request.POST)
+        if form.is_valid():
+            new_subject = form.save(commit=False)
+            new_subject.group = group
+            new_subject.save()
+            messages.success(request, "У группы появилась новая дисциплина!")
+
+        return redirect(reverse("group", kwargs={"pk": pk}))
+
+
+@admin_only
+def delete_teacher_group_subject(request, pk):
+
+    subject = get_object_or_404(TeacherGroupSubject, pk=pk)
+    group_pk = subject.group.pk
+    subject.delete()
+    messages.success(request, f"У группы удалена одна из дисциплин!")
+
+    return redirect(reverse("group", kwargs={"pk": group_pk}))
+
+
+@method_decorator(admin_only, name="dispatch")
 class GroupsListView(LoginRequiredMixin, ListView):
     model = Group
     context_object_name = "objects"
@@ -351,10 +377,24 @@ class GroupEditView(LoginRequiredMixin, View):
 
     def get(self, request, pk, *args, **kwargs):
         group = get_object_or_404(Group, pk=pk)
-        form = GroupForm(instance=group)
-        teachers = User.objects.filter(profile__type=2)
 
-        return render(request, "study/group/edit.html", {"form": form, "group": group, "teachers": teachers})
+        form = GroupForm(instance=group)
+        subjects_form = TeacherGroupSubjectForm()
+
+        teachers = User.objects.filter(profile__type=2)
+        subjects = Subject.objects.all()
+
+        return render(
+            request,
+            "study/group/edit.html",
+            {
+                "form": form,
+                "subjects_form": subjects_form,
+                "group": group,
+                "teachers": teachers,
+                "subjects": subjects,
+            }
+        )
 
 
 @method_decorator(admin_only, name="dispatch")
