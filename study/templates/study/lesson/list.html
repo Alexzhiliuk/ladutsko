@@ -17,8 +17,8 @@
         <table class="table">
         <thead>
             <tr>
-                <th>ID</th>
                 <th>Название</th>
+                <th>Тип</th>
                 <th>Дисциплина</th>
                 <th>Тест</th>
                 <th></th>
@@ -27,12 +27,10 @@
         <tbody>
             {% for object in objects %}
             <tr>
-                <td>
-                    <a href="{% url 'lesson' object.id %}" class="table__object-url">{{ object.id }}</a>
-                </td>
                 <td>{{ object.name|default:"-" }}</td>
+                <td>{{ object.get_type_display }}</td>
                 <td>
-                    <a href="{% if object.subject %}{% url 'subject' object.subject.pk %}{% endif %}" class="table__foreign-key">{{ object.subject.id }}</a>
+                    <a href="#" class="table__foreign-key">{{ object.subject.subject }}</a>
                 </td>
                 <td>
                     <a href="{% if object.test %}#{% endif %}" class="table__foreign-key">{{ object.test.id }}</a>

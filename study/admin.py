@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Group, Subject, TeacherGroupSubject, Lesson, LessonPhoto, Test, Question, Answer, Try
+from .models import Group, Subject, TeacherGroupSubject, Lesson, LessonPhoto, LessonVideo, Test, Question, Answer, Try
 
 
 @admin.register(Group)
@@ -20,12 +20,17 @@ class TeacherGroupSubjectAdmin(admin.ModelAdmin):
 
 @admin.register(Lesson)
 class LessonAdmin(admin.ModelAdmin):
-    list_display = ["name", "subject"]
+    list_display = ["name", "subject", "type"]
 
 
 @admin.register(LessonPhoto)
 class LessonPhotoAdmin(admin.ModelAdmin):
-    list_display = ["name", "owner"]
+    list_display = ["lesson"]
+
+
+@admin.register(LessonVideo)
+class LessonVideoAdmin(admin.ModelAdmin):
+    list_display = ["lesson"]
 
 
 @admin.register(Test)

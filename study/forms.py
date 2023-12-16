@@ -60,12 +60,13 @@ class TeacherGroupSubjectForm(forms.ModelForm):
 
 class LessonForm(forms.ModelForm):
 
-    photo = forms.ImageField(label="Фото", required=False)
+    photos = forms.ImageField(label="Фото", required=False)
+    videos = forms.FileField(label="Видео", required=False)
 
     class Meta:
         model = Lesson
-        fields = ("name", "subject", "test", "video", "text")
-        labels = {"name": "Название", "subject": "Дисциплина", "test": "Тест", "video": "Видео", "text": "Текст"}
+        fields = ("name", "type", "subject", "test", "text")
+        labels = {"name": "Название", "type": "Тип занятия", "subject": "Дисциплина", "test": "Тест", "text": "Текст"}
 
     def __init__(self, *args, **kwargs):
         super(LessonForm, self).__init__(*args, **kwargs)
@@ -74,6 +75,8 @@ class LessonForm(forms.ModelForm):
             visible.field.widget.attrs['class'] = 'form__input'
 
         self.fields["text"].widget.attrs['class'] = 'form__input full-w'
+        self.fields["photos"].widget.attrs['multiple'] = True
+        self.fields["videos"].widget.attrs['multiple'] = True
 
 
 class TestForm(forms.ModelForm):
@@ -126,20 +129,6 @@ class AnswerForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(AnswerForm, self).__init__(*args, **kwargs)
-
-        for visible in self.visible_fields():
-            visible.field.widget.attrs['class'] = 'form__input'
-
-
-class LessonPhotoForm(forms.ModelForm):
-    class Meta:
-        model = LessonPhoto
-        fields = ("name", "photo")
-        labels = {"name": "Название", "photo": "Фото"}
-        widgets = {"type": forms.RadioSelect}
-
-    def __init__(self, *args, **kwargs):
-        super(LessonPhotoForm, self).__init__(*args, **kwargs)
 
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form__input'

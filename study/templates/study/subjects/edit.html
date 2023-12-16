@@ -38,13 +38,17 @@
                 <tr>
                     <th>Группа</th>
                     <th>Преподаватель</th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody>
                 {% for item in subject.items.all %}
                 <tr>
-                    <td>{{ item.group }}</td>
+                    <td><a href="{% url 'group' item.group.pk %}">{{ item.group }}</a></td>
                     <td>{{ item.teacher }}</td>
+                    <td>
+                        <a href="{% url 'lessons' %}?subject_pk={{item.pk}}" class="btn btn-table">занятия</a>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>

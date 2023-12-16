@@ -20,10 +20,10 @@ from .decorators.is_admin import admin_only
 from .decorators.is_not_student import not_student
 from .decorators.is_teacher import teacher_only
 from .forms import (
-    StudentForm, GroupForm, SubjectForm, LessonForm, AdminTestForm, QuestionForm, AnswerForm, LessonPhotoForm,
+    StudentForm, GroupForm, SubjectForm, LessonForm, AdminTestForm, QuestionForm, AnswerForm,
     ExcelForm, TeacherGroupSubjectForm
 )
-from .models import Group, TeacherGroupSubject, Subject, Lesson, LessonPhoto, Test, Question, Answer, Try
+from .models import Group, TeacherGroupSubject, Subject, Lesson, LessonPhoto, Test, Question, Answer, Try, LessonVideo
 
 
 class IndexView(LoginRequiredMixin, View):
@@ -501,6 +501,14 @@ class LessonsListView(LoginRequiredMixin, ListView):
     context_object_name = "objects"
     template_name = "study/lesson/list.html"
 
+    def get_queryset(self):
+        qs = super().get_queryset()
+        subject_pk = self.request.GET.get("subject_pk")
+        if subject_pk:
+            subject = get_object_or_404(TeacherGroupSubject, pk=subject_pk)
+            qs = qs.filter(subject=subject)
+        return qs
+
 
 @method_decorator(admin_only, name="dispatch")
 class LessonEditView(LoginRequiredMixin, View):
@@ -508,31 +516,37 @@ class LessonEditView(LoginRequiredMixin, View):
         lesson = get_object_or_404(Lesson, pk=pk)
         form = LessonForm(instance=lesson, data=request.POST, files=request.FILES)
         if form.is_valid():
-            photo_field = form.cleaned_data.get("photo")
-            if photo_field:
-                lesson.photos.clear()
-                photo = LessonPhoto(owner=request.user, name=photo_field.name, photo=photo_field)
-                photo.save()
-                new_lesson = form.save()
-                new_lesson.photos.add(photo)
-            else:
-                form.save()
-            messages.success(request, "Урок изменен!")
+            form.save()
+            photos_field = request.FILES.getlist("photos")
+            videos_field = request.FILES.getlist("videos")
+
+            if photos_field:
+                for photo in photos_field:
+                    LessonPhoto.objects.create(photo=photo, lesson=lesson)
+            if videos_field:
+                for video in videos_field:
+                    LessonVideo.objects.create(video=video, lesson=lesson)
+
+            messages.success(request, "Занятие изменено!")
         return redirect(reverse("lesson", kwargs={"pk": pk}))
 
     def get(self, request, pk, *args, **kwargs):
         lesson = get_object_or_404(Lesson, pk=pk)
         form = LessonForm(instance=lesson)
-        subjects = Subject.objects.all()
+        subjects = TeacherGroupSubject.objects.all()
         tests = Test.objects.all()
-        photo = lesson.photos.first()
+        types = Lesson.type.field.choices
+        photos = lesson.photos.all()
+        videos = lesson.videos.all()
 
         return render(request, "study/lesson/edit.html", {
             "form": form,
             "lesson": lesson,
             "subjects": subjects,
             "tests": tests,
-            "photo": photo
+            "types": types,
+            "photos": photos,
+            "videos": videos,
         })
 
 
@@ -541,30 +555,56 @@ class LessonCreateView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         form = LessonForm(data=request.POST, files=request.FILES)
         if form.is_valid():
-            photo_field = form.cleaned_data.get("photo")
-            if photo_field:
-                photo = LessonPhoto(owner=request.user, name=photo_field.name, photo=photo_field)
-                photo.save()
-                new_lesson = form.save()
-                new_lesson.photos.add(photo)
-            else:
-                form.save()
-            messages.success(request, "Урок создан!")
+            new_lesson = form.save()
+            photos_field = request.FILES.getlist("photos")
+            videos_field = request.FILES.getlist("videos")
+
+            if photos_field:
+                for photo in photos_field:
+                    LessonPhoto.objects.create(photo=photo, lesson=new_lesson)
+            if videos_field:
+                for video in videos_field:
+                    LessonVideo.objects.create(video=video, lesson=new_lesson)
+
+            messages.success(request, "Занятие создано!")
+
         return redirect(reverse("lessons"))
 
     def get(self, request, *args, **kwargs):
 
         form = LessonForm()
-        subjects = Subject.objects.all()
+        subjects = TeacherGroupSubject.objects.all()
         tests = Test.objects.all()
-        photos = LessonPhoto.objects.all()
+        types = Lesson.type.field.choices
 
         return render(request, "study/lesson/add.html", {
             "form": form,
             "subjects": subjects,
             "tests": tests,
-            "photos": photos
+            "types": types
         })
+
+
+@admin_only
+def delete_lesson_photo(request, pk):
+
+    photo = get_object_or_404(LessonPhoto, pk=pk)
+    lesson_pk = photo.lesson.pk
+    photo.delete()
+    messages.success(request, "Фотография удалена!")
+
+    return redirect(reverse("lesson", kwargs={"pk": lesson_pk}))
+
+
+@admin_only
+def delete_lesson_video(request, pk):
+
+    video = get_object_or_404(LessonVideo, pk=pk)
+    lesson_pk = video.lesson.pk
+    video.delete()
+    messages.success(request, "Видеоролик удален!")
+
+    return redirect(reverse("lesson", kwargs={"pk": lesson_pk}))
 
 
 @not_student

@@ -39,19 +39,6 @@ class TeacherGroupSubject(models.Model):
         return f"{self.subject.name}, группа {self.group.number}, преподаватель {self.teacher}"
 
 
-class LessonPhoto(models.Model):
-    owner = models.ForeignKey(User, related_name="lesson_photos", on_delete=models.CASCADE)
-    name = models.CharField(max_length=128)
-    photo = models.ImageField(upload_to="lessons/photos/")
-
-    class Meta:
-        verbose_name = "Фото"
-        verbose_name_plural = "Фото"
-
-    def __str__(self):
-        return f"{self.name}: {self.owner}"
-
-
 class Test(models.Model):
     owner = models.ForeignKey(User, related_name="tests", on_delete=models.CASCADE, null=True, blank=True)
     name = models.CharField(max_length=128)
@@ -120,10 +107,15 @@ class Answer(models.Model):
 
 
 class Lesson(models.Model):
-    subject = models.ForeignKey(Subject, related_name="lessons", on_delete=models.CASCADE, null=True, blank=True)
+
+    class Type(models.TextChoices):
+        LECTURE = "LC", "Лекция"
+        PRACTICAL = "PR", "Практическое занятия"
+        LABORATORY = "LR", "Лабораторное занятие"
+
+    type = models.CharField("Тип", max_length=32, choices=Type.choices)
+    subject = models.ForeignKey(TeacherGroupSubject, related_name="lessons", on_delete=models.CASCADE, null=True, blank=True)
     name = models.CharField(max_length=128)
-    video = models.FileField(upload_to="lessons/videos/", null=True, blank=True)
-    photos = models.ManyToManyField(LessonPhoto, blank=True)
     test = models.ForeignKey(Test, related_name="lessons", on_delete=models.SET_NULL, null=True, blank=True)
     text = models.TextField(null=True, blank=True)
 
@@ -132,7 +124,7 @@ class Lesson(models.Model):
         verbose_name_plural = "Занятия"
 
     def __str__(self):
-        return f"{self.name} ({self.subject})"
+        return f"{self.name} ({self.type})"
 
     def get_test_best_try(self):
         tries = [try_.score for try_ in Try.objects.filter(test=self.test)]
@@ -145,6 +137,30 @@ class Lesson(models.Model):
         if tries:
             return max(tries)
         return 0
+
+
+class LessonPhoto(models.Model):
+    photo = models.ImageField(upload_to="lessons/photos/")
+    lesson = models.ForeignKey(Lesson, related_name="photos", on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name = "Фото"
+        verbose_name_plural = "Фото"
+
+    def __str__(self):
+        return f"Фото для {self.lesson.name}"
+
+
+class LessonVideo(models.Model):
+    video = models.FileField(upload_to="lessons/videos/")
+    lesson = models.ForeignKey(Lesson, related_name="videos", on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name = "Видео"
+        verbose_name_plural = "Видео"
+
+    def __str__(self):
+        return f"Видео для {self.lesson.name}"
 
 
 class Try(models.Model):
