@@ -58,6 +58,19 @@ class TeacherGroupSubjectForm(forms.ModelForm):
             visible.field.widget.attrs['class'] = 'form__input'
 
 
+class GroupForTeacherSubjectForm(forms.ModelForm):
+    class Meta:
+        model = TeacherGroupSubject
+        fields = ("group", )
+        labels = {"group": "Группа"}
+
+    def __init__(self, *args, **kwargs):
+        super(GroupForTeacherSubjectForm, self).__init__(*args, **kwargs)
+
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form__input'
+
+
 class LessonForm(forms.ModelForm):
 
     photos = forms.ImageField(label="Фото", required=False)

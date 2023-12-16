@@ -21,8 +21,8 @@ from .decorators.is_not_student import not_student
 from .decorators.is_teacher import teacher_only
 from .forms import (
     StudentForm, GroupForm, SubjectForm, LessonForm, AdminTestForm, QuestionForm, AnswerForm,
-    ExcelForm, TeacherGroupSubjectForm
-)
+    ExcelForm, TeacherGroupSubjectForm,
+    GroupForTeacherSubjectForm)
 from .models import Group, TeacherGroupSubject, Subject, Lesson, LessonPhoto, Test, Question, Answer, Try, LessonVideo
 
 
@@ -866,15 +866,11 @@ class MySubjectsListView(LoginRequiredMixin, ListView):
 @method_decorator(teacher_only, name="dispatch")
 class MySubjectCreateView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
-        group = request.user.study_groups.first()
         subject_name = request.POST.get("name")
-        if not group:
-            messages.error(request, "У вас нет своей группы!")
-            return redirect(reverse("index"))
-
-        Subject.objects.create(name=subject_name, owner=request.user)
+        subject = Subject.objects.create(name=subject_name)
         messages.success(request, "Дисциплина создана!")
-        return redirect(reverse("my-subjects"))
+
+        return redirect(reverse("my-subject", kwargs={"pk": subject.pk}))
 
     def get(self, request, *args, **kwargs):
         form = SubjectForm()
@@ -888,14 +884,45 @@ class MySubjectEditView(LoginRequiredMixin, View):
         form = SubjectForm(instance=subject, data=request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, "Предмет изменен!")
+            messages.success(request, "Дисциплина изменена!")
 
         return redirect(reverse("my-subject", kwargs=kwargs))
 
     def get(self, request, *args, **kwargs):
         subject = get_object_or_404(Subject, pk=kwargs["pk"])
         form = SubjectForm(instance=subject)
-        return render(request, "study/teacher/edit-subject.html", {"form": form, "subject": subject})
+        group_form = GroupForTeacherSubjectForm()
+        groups = Group.objects.all()
+        return render(request, "study/teacher/edit-subject.html", {
+            "form": form, "group_form": group_form, "subject": subject, "groups": groups,
+        })
+
+
+@method_decorator(teacher_only, name="dispatch")
+class MySubjectAddToGroupView(LoginRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
+        subject = get_object_or_404(Subject, pk=kwargs["pk"])
+        form = GroupForTeacherSubjectForm(request.POST)
+        if form.is_valid():
+            group = form.cleaned_data.get("group")
+            TeacherGroupSubject.objects.get_or_create(
+                group=group,
+                teacher=request.user,
+                subject=subject
+            )
+            messages.success(request, "Дисциплина добавлена к группе!")
+
+        return redirect(reverse("my-subject", kwargs={"pk": subject.pk}))
+
+
+@teacher_only
+def remove_my_subject_from_group(request, pk):
+    subject = get_object_or_404(TeacherGroupSubject, pk=pk)
+    subject_pk = subject.subject.pk
+    subject.delete()
+    messages.success(request, f"Дисциплина удалена из группы!")
+
+    return redirect(reverse("my-subject", kwargs={"pk": subject_pk}))
 
 
 @method_decorator(teacher_only, name="dispatch")
