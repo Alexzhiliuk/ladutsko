@@ -35,7 +35,7 @@
 </section>
 
 <section class="section">
-    <h2 class="h2 mt-40">Добавить дисциплину к группе</h2>
+    <h2 class="h2 mt-40">Добавить дисциплину для группы</h2>
     <form action="{% url 'my-subject-add-to-group' subject.pk %}" method="POST" class="form mt-40">
         {% csrf_token %}
         <div class="form__item">

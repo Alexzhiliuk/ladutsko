@@ -790,20 +790,11 @@ def delete_answer(request, pk):
 @method_decorator(teacher_only, name="dispatch")
 class MyGroupListView(LoginRequiredMixin, ListView):
     model = User
-    context_object_name = "objects"
+    context_object_name = "groups"
     template_name = "study/teacher/my_group.html"
 
     def get_queryset(self):
-        group = self.request.user.study_groups.first()
-        if group:
-            students = group.students.all()
-            return students
-        return []
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["group"] = self.request.user.study_groups.first()
-        return context
+        return {subject.group for subject in TeacherGroupSubject.objects.filter(teacher=self.request.user)}
 
 
 @method_decorator(teacher_only, name="dispatch")
