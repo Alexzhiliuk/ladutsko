@@ -48,7 +48,7 @@ class Test(models.Model):
         verbose_name_plural = "Тесты"
 
     def __str__(self):
-        return f"{self.name}: {self.owner}"
+        return f"{self.name}"
 
     def get_question_score(self):
         return 100 / self.questions.count()

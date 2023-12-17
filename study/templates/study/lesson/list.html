@@ -33,7 +33,11 @@
                     <a href="#" class="table__foreign-key">{{ object.subject.subject }}</a>
                 </td>
                 <td>
-                    <a href="{% if object.test %}#{% endif %}" class="table__foreign-key">{{ object.test.id }}</a>
+                    {% if object.test %}
+                    <a href="#" class="table__foreign-key">{{ object.test }}</a>
+                    {% else %}
+                    Отсутсвует
+                    {% endif %}
                 </td>
                 <td>
                     <a href="{% url 'lesson' object.id %}" class="btn btn-table">изменить</a>
