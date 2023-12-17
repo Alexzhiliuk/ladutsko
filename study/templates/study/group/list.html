@@ -18,6 +18,7 @@
             <tr>
                 <th>Номер группы</th>
                 <th></th>
+                <th></th>
             </tr>
         </thead>
         <tbody>
@@ -26,6 +27,9 @@
                 <td>{{ object.number }}</td>
                 <td>
                     <a href="{% url 'group' object.pk %}" class="btn btn-table">изменить</a>
+                </td>
+                <td>
+                    <a href="{% url 'group-students' object.pk %}" class="btn btn-table">студенты</a>
                 </td>
             </tr>
             {% endfor %}

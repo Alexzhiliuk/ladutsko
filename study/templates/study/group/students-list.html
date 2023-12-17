@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% load static %}
+
+
+{% block page_title %}Студенты группы{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/table.css' %}">
+{% endblock %}
+
+{% block content %}
+<section >
+    <h1 class="h1">Стунденты группы {{ group.number }}</h1>
+    <div class="table-wrapper mt-40">
+        <table class="table">
+        <thead>
+            <tr>
+                <th>Имя</th>
+                <th>Фамилия</th>
+                <th>Отчество</th>
+                <th>Email</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for student in students %}
+            <tr>
+                <td>{{ student.first_name|default:"-" }}</td>
+                <td>{{ student.last_name|default:"-" }}</td>
+                <td>{{ student.profile.middle_name|default_if_none:"-" }}</td>
+                <td><a href="{% url 'student' student.pk %}">{{ student.email|default:"-" }}</a></td>
+                <td>
+                    <a href="{% url 'group-exclude-student' student.pk %}" class="btn btn-table btn_red confirm">исключить</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+
+</section>
+<script>
+    $(".confirm").on('click', function(e) {
+        var req = confirm("Вы уверены?");
+        if (!req){
+            event.preventDefault();
+        }
+
+    })
+</script>
+{% endblock %}

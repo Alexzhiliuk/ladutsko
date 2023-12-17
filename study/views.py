@@ -359,6 +359,25 @@ def delete_teacher_group_subject(request, pk):
 
 
 @method_decorator(admin_only, name="dispatch")
+class GroupStudentsListView(LoginRequiredMixin, ListView):
+    model = User
+    context_object_name = "students"
+    template_name = "study/group/students-list.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        self.group = get_object_or_404(Group, pk=kwargs.get("pk"))
+        return super(GroupStudentsListView, self).dispatch(request, *args, **kwargs)
+
+    def get_queryset(self):
+        return self.group.students.all()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["group"] = self.group
+        return context
+
+
+@method_decorator(admin_only, name="dispatch")
 class GroupsListView(LoginRequiredMixin, ListView):
     model = Group
     context_object_name = "objects"
@@ -817,10 +836,11 @@ class MyGroupCreateView(LoginRequiredMixin, View):
 
 def exclude_student(request, pk):
     student = get_object_or_404(User, pk=pk)
-    group = request.user.study_groups.first()
+    group = student.group_set.first()
+    group_pk = group.pk
     group.students.remove(student)
-    messages.success(request, "Ученик был исключен")
-    return redirect(reverse("my-group"))
+    messages.success(request, "Студент был исключен")
+    return redirect(reverse("group-students", kwargs={"pk": group_pk}))
 
 
 @not_student

@@ -20,10 +20,12 @@ urlpatterns = [
 
     path("groups/", views.GroupsListView.as_view(), name="groups"),
     path("group/<int:pk>/", views.GroupEditView.as_view(), name="group"),
+    path("group/<int:pk>/students/", views.GroupStudentsListView.as_view(), name="group-students"),
     path("group/delete/<int:pk>/", views.delete_group, name="group-delete"),
     path("group/add/", views.GroupCreateView.as_view(), name="group-add"),
     path("group/<int:pk>/add-subject", views.TeacherGroupSubjectCreateView.as_view(), name="group-add-subject"),
     path("group/<int:pk>/remove-subject", views.delete_teacher_group_subject, name="group-remove-subject"),
+    path("group/exclude-student/<int:pk>/", views.exclude_student, name="group-exclude-student"),
 
     path("subjects/", views.SubjectsListView.as_view(), name="subjects"),
     path("subject/<int:pk>/", views.SubjectEditView.as_view(), name="subject"),
@@ -56,7 +58,6 @@ urlpatterns = [
 
     path("teacher/my-group/", views.MyGroupListView.as_view(), name="my-group"),
     path("teacher/my-group/create/", views.MyGroupCreateView.as_view(), name="my-group-create"),
-    path("teacher/my-group/exclude/<int:pk>/", views.exclude_student, name="my-group-exclude-student"),
     path("teacher/my-subjects/", views.MySubjectsListView.as_view(), name="my-subjects"),
     path("teacher/my-subjects/create/", views.MySubjectCreateView.as_view(), name="my-subject-create"),
     path("teacher/my-subject/<int:pk>/", views.MySubjectEditView.as_view(), name="my-subject"),
