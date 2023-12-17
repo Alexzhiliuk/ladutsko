@@ -20,9 +20,9 @@ from .decorators.is_admin import admin_only
 from .decorators.is_not_student import not_student
 from .decorators.is_teacher import teacher_only
 from .forms import (
-    StudentForm, GroupForm, SubjectForm, LessonForm, AdminTestForm, QuestionForm, AnswerForm,
+    StudentForm, GroupForm, SubjectForm, LessonForm, QuestionForm, AnswerForm,
     ExcelForm, TeacherGroupSubjectForm,
-    GroupForTeacherSubjectForm)
+    GroupForTeacherSubjectForm, TestForm)
 from .models import Group, TeacherGroupSubject, Subject, Lesson, LessonPhoto, Test, Question, Answer, Try, LessonVideo
 
 
@@ -648,7 +648,7 @@ class TestsListView(LoginRequiredMixin, ListView):
 class TestEditView(LoginRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
         test = get_object_or_404(Test, pk=pk)
-        form = AdminTestForm(instance=test, data=request.POST)
+        form = TestForm(instance=test, data=request.POST)
         if form.is_valid():
             form.save()
             messages.success(request, "Тест изменен!")
@@ -656,39 +656,29 @@ class TestEditView(LoginRequiredMixin, View):
 
     def get(self, request, pk, *args, **kwargs):
         test = get_object_or_404(Test, pk=pk)
-        form = AdminTestForm(instance=test)
-        teachers = User.objects.filter(profile__type=2)
+        form = TestForm(instance=test)
 
         return render(request, "study/test/edit.html", {
             "form": form,
             "test": test,
-            "teachers": teachers,
         })
 
 
 @method_decorator(not_student, name="dispatch")
 class TestCreateView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
-        form = AdminTestForm(request.POST)
+        form = TestForm(request.POST)
         if form.is_valid():
-            if request.user.profile.type == 2:
-                name = request.POST.get("name")
-                Test.objects.create(owner=request.user, name=name)
-                messages.success(request, "Тест создан!")
-                return redirect(reverse("my-tests"))
-            else:
-                form.save()
-                messages.success(request, "Тест создан!")
+            form.save()
+            messages.success(request, "Тест создан!")
 
         return redirect(reverse("tests"))
 
     def get(self, request, *args, **kwargs):
-        form = AdminTestForm()
-        teachers = User.objects.filter(profile__type=2)
+        form = TestForm()
 
         return render(request, "study/test/add.html", {
             "form": form,
-            "teachers": teachers,
         })
 
 
@@ -708,11 +698,22 @@ def delete_test(request, pk):
 class TestQuestionCreateView(LoginRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
         form = QuestionForm(request.POST)
+
         if form.is_valid():
             new_question = form.save(commit=False)
             new_question.test = get_object_or_404(Test, pk=pk)
             new_question.save()
             messages.success(request, "Вопрос создан!")
+
+            answer_num = 1
+            while True:
+                answer = request.POST.get(f"answer-{answer_num}")
+                if answer:
+                    correct = bool(request.POST.get(f"answer-{answer_num}-correct"))
+                    Answer.objects.create(question=new_question, correct=correct, text=answer)
+                    answer_num += 1
+                    continue
+                break
 
         return redirect(reverse("test", kwargs={"pk": pk}))
 

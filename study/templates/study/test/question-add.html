@@ -7,6 +7,28 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/radio.css' %}">
+<style>
+    .answer-variants {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    .answer-variants .btn {
+        cursor: pointer;
+    }
+    .answer-variant {
+        position: relative;
+    }
+
+    .answer-variant .correct{
+        cursor: pointer;
+        width: fit-content;
+        position: absolute;
+        right: 20px;
+        top: 50%;
+        translate: 0 -50%;
+    }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -22,8 +44,6 @@
         <div class="form__item">
             <label class="form__label">{{ form.type.label }}</label>
             <div class="radio">
-<!--                <div class="radio__item radio__item_checked" data-value="text">Текст</div>-->
-<!--                <div class="radio__item" data-value="variants">Варианты ответа</div>-->
                 {% for value, type in types %}
                 <div class="radio__item {% if forloop.first%}radio__item_checked{% endif %}" data-value="{{ value }}">{{ type }}</div>
                 {% endfor %}
@@ -32,6 +52,21 @@
                 {% endfor %}
             </div>
         </div>
+        <div class="form__item answer-variants" id="answer-variants" data-variants-count="2" style="display: none;">
+            <p>Отметьте правильные варианты чекбоксом</p>
+            <div class="form__item" id="one-more-answer">
+                <button class="btn back">Добавить еще вариант ответа</button>
+            </div>
+            <div class="answer-variant">
+                <input type="text" name="answer-1">
+                <input class="correct" type="checkbox" name="answer-1-correct">
+            </div>
+            <div class="answer-variant">
+                <input type="text" name="answer-2">
+                <input class="correct" type="checkbox" name="answer-2-correct">
+            </div>
+        </div>
+
         <div class="form__item">
             <button type="submit" class="btn">Добавить</button>
         </div>
@@ -41,6 +76,26 @@
 </section>
 
 <script>
+    $(".radio__item[data-value='CH']").click(function(){
+        $("#answer-variants").show()
+    })
+    $(".radio__item[data-value='TX']").click(function(){
+        $("#answer-variants").hide()
+    })
+    $("#one-more-answer").click(function(e){
+        e.preventDefault()
+        let count = Number($("#answer-variants").attr("data-variants-count"))
+        $("#answer-variants").attr("data-variants-count", count + 1)
+        $("#answer-variants").append(
+            `
+            <div class="answer-variant">
+                <input type="text" name="answer-${count+1}">
+                <input class="correct" type="checkbox" name="answer-${count+1}-correct">
+            </div>
+            `
+        )
+    })
+
     $(".radio__item").on("click", function() {
         if (!$(this).hasClass("radio__item_checked")) {
             $(this).parent().children(".radio__item").removeClass("radio__item_checked")

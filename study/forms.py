@@ -105,21 +105,6 @@ class TestForm(forms.ModelForm):
             visible.field.widget.attrs['class'] = 'form__input'
 
 
-class AdminTestForm(forms.ModelForm):
-    class Meta:
-        model = Test
-        fields = ["name", "owner"]
-        labels = {"name": "Название", "owner": "Владелец"}
-
-    def __init__(self, *args, **kwargs):
-        super(AdminTestForm, self).__init__(*args, **kwargs)
-
-        for visible in self.visible_fields():
-            visible.field.widget.attrs['class'] = 'form__input'
-
-        self.fields["owner"].queryset = self.fields["owner"].queryset.filter(profile__type=2)
-
-
 class QuestionForm(forms.ModelForm):
     class Meta:
         model = Question

@@ -35,7 +35,7 @@ class LessonVideoAdmin(admin.ModelAdmin):
 
 @admin.register(Test)
 class TestAdmin(admin.ModelAdmin):
-    list_display = ["name", "owner"]
+    list_display = ["name"]
 
 
 @admin.register(Question)

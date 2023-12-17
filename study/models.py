@@ -40,7 +40,6 @@ class TeacherGroupSubject(models.Model):
 
 
 class Test(models.Model):
-    owner = models.ForeignKey(User, related_name="tests", on_delete=models.CASCADE, null=True, blank=True)
     name = models.CharField(max_length=128)
 
     class Meta:
@@ -48,7 +47,7 @@ class Test(models.Model):
         verbose_name_plural = "Тесты"
 
     def __str__(self):
-        return f"{self.name}"
+        return self.name
 
     def get_question_score(self):
         return 100 / self.questions.count()
@@ -76,12 +75,12 @@ class Test(models.Model):
 
 class Question(models.Model):
 
-    class Type(models.IntegerChoices):
-        TEXT = 1
-        CHOOSE = 2
+    class Type(models.TextChoices):
+        TEXT = "TX", "Текстовый"
+        CHOOSE = "CH", "С вариантами ответа"
 
     test = models.ForeignKey(Test, related_name="questions", on_delete=models.CASCADE)
-    type = models.IntegerField(choices=Type.choices)
+    type = models.CharField("Тип", max_length=32, choices=Type.choices)
     text = models.CharField(max_length=256)
 
     class Meta:
@@ -116,7 +115,7 @@ class Lesson(models.Model):
     type = models.CharField("Тип", max_length=32, choices=Type.choices)
     subject = models.ForeignKey(TeacherGroupSubject, related_name="lessons", on_delete=models.CASCADE, null=True, blank=True)
     name = models.CharField(max_length=128)
-    test = models.ForeignKey(Test, related_name="lessons", on_delete=models.SET_NULL, null=True, blank=True)
+    test = models.OneToOneField(Test, on_delete=models.SET_NULL, null=True, blank=True)
     text = models.TextField(null=True, blank=True)
 
     class Meta:
