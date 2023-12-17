@@ -59,7 +59,7 @@ class IndexView(LoginRequiredMixin, View):
                 request,
                 "study/index.html",
                 {
-                    "menu": {subject.name: reverse_lazy("student-subject", kwargs={"pk": subject.pk}) for subject in user.group_set.first().subject_set.all()}
+                    "menu": {subject.name_for_student: reverse_lazy("student-subject", kwargs={"pk": subject.pk}) for subject in user.group_set.first().subjects.all()}
                 }
             )
 
@@ -1034,12 +1034,12 @@ class StudentSubjectView(LoginRequiredMixin, View):
 
     def get(self, request, *args, **kwargs):
         user = self.request.user
-        subject = get_object_or_404(Subject, pk=kwargs["pk"])
+        subject = get_object_or_404(TeacherGroupSubject, pk=kwargs["pk"])
 
         if not user.group_set.first():
             return HttpResponse("No permission")
-        print(user.group_set.first(), subject.groups.all())
-        if user.group_set.first() not in subject.groups.all():
+
+        if user.group_set.first() != subject.group:
             return HttpResponse("No permission")
 
         return render(request, "study/student/subject.html", {
@@ -1056,7 +1056,7 @@ class StudentLessonView(LoginRequiredMixin, View):
 
         if not user.group_set.first():
             return HttpResponse("No permission")
-        if user.group_set.first() not in lesson.subject.groups.all():
+        if user.group_set.first() != lesson.subject.group:
             return HttpResponse("No permission")
 
         my_best_try = 0
@@ -1081,7 +1081,7 @@ class StudentTestView(LoginRequiredMixin, View):
         Try.objects.create(user=user, test=test, score=score)
         messages.success(request, f"Ваш балл составил {score}")
 
-        return redirect(reverse("student-lesson", kwargs={"pk": test.lessons.first().pk}))
+        return redirect(reverse("student-lesson", kwargs={"pk": test.lesson.pk}))
 
     def get(self, request, *args, **kwargs):
         user = self.request.user

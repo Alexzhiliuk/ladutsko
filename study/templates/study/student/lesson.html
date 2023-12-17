@@ -16,13 +16,13 @@
 <section class="section">
     <h1 class="h1">{{ lesson.name }}</h1>
     <div class="gallery mt-40">
-        {% if lesson.video %}
+        {% for video in lesson.videos.all  %}
         <div class="lesson-video popup-video">
             <video controls>
-                <source src="{{ lesson.video.url }}" type="video/mp4">
+                <source src="{{ video.video.url }}" type="video/mp4">
             </video>
         </div>
-        {% endif %}
+        {% endfor %}
         <div class="lesson-images mt-20">
             {% for photo in lesson.photos.all  %}
             <a href="{{ photo.photo.url }}" class="lesson-image popup-image">

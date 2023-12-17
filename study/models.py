@@ -38,6 +38,10 @@ class TeacherGroupSubject(models.Model):
     def __str__(self):
         return f"{self.subject.name}, группа {self.group.number}, преподаватель {self.teacher}"
 
+    @property
+    def name_for_student(self):
+        return f"{self.subject} ({self.teacher})"
+
 
 class Test(models.Model):
     name = models.CharField(max_length=128)
@@ -56,7 +60,7 @@ class Test(models.Model):
         question_score = self.get_question_score()  # максимальный балл за вопрос
         try_score = 0  # итоговый балл
         for question in self.questions.all():
-            if question.type == 2:
+            if question.type == "CH":
                 answers = {}
                 for answer in question.answers.all():
                     answers[answer.pk] = answer.correct
@@ -65,7 +69,7 @@ class Test(models.Model):
                     if is_correct and data.get(str(ans_pk)) or not is_correct and not data.get(str(ans_pk)):
                         correct_choices += 1
                 try_score += question_score * (correct_choices / len(answers))
-            elif question.type == 1:
+            elif question.type == "TX":
                 answer = question.answers.first()
                 if data.get(str(answer.pk)).lower().strip() == answer.text.lower().strip():
                     try_score += question_score
