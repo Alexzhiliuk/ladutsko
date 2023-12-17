@@ -20,6 +20,7 @@
                 <th>Название</th>
                 <th>Тип</th>
                 <th>Дисциплина</th>
+                <th>Группа</th>
                 <th>Тест</th>
                 <th></th>
             </tr>
@@ -30,7 +31,10 @@
                 <td>{{ object.name|default:"-" }}</td>
                 <td>{{ object.get_type_display }}</td>
                 <td>
-                    <a href="#" class="table__foreign-key">{{ object.subject.subject }}</a>
+                    <a href="{% url 'subject' object.subject.subject.pk %}" class="table__foreign-key">{{ object.subject.subject }}</a>
+                </td>
+                <td>
+                    <a href="{% url 'group' object.subject.group.pk %}" class="table__foreign-key">{{ object.subject.group }}</a>
                 </td>
                 <td>
                     {% if object.test %}
