@@ -92,8 +92,8 @@
             <tbody>
                 {% for subject in group.subjects.all %}
                 <tr>
-                    <td>{{ subject.subject }}</td>
-                    <td>{{ subject.teacher }}</td>
+                    <td><a href="{% url 'subject' subject.subject.pk %}">{{ subject.subject }}</a></td>
+                    <td><a href="{% url 'teacher' subject.teacher.pk %}">{{ subject.teacher }}</a></td>
                     <td><a href="{% url 'group-remove-subject' subject.pk %}" class="btn btn-table btn_red confirm">Удалить</a></td>
                 </tr>
                 {% endfor %}

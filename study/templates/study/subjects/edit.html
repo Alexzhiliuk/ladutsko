@@ -45,7 +45,7 @@
                 {% for item in subject.items.all %}
                 <tr>
                     <td><a href="{% url 'group' item.group.pk %}">{{ item.group }}</a></td>
-                    <td>{{ item.teacher }}</td>
+                    <td><a href="{% url 'teacher' item.teacher.pk %}">{{ item.teacher }}</a></td>
                     <td>
                         <a href="{% url 'lessons' %}?subject_pk={{item.pk}}" class="btn btn-table">занятия</a>
                     </td>
