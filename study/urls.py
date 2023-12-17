@@ -65,7 +65,6 @@ urlpatterns = [
     path("teacher/my-lessons/create/", views.MyLessonCreateView.as_view(), name="my-lesson-create"),
     path("teacher/my-lesson/<int:pk>/", views.MyLessonEditView.as_view(), name="my-lesson"),
     path("teacher/my-photos/", views.MyPhotosView.as_view(), name="my-photos"),
-    path("teacher/my-photos/create/", views.MyPhotoCreateView.as_view(), name="my-photo-create"),
     path("teacher/my-photo/<int:pk>/", views.MyPhotoEditView.as_view(), name="my-photo"),
     path("teacher/my-tests/", views.MyTestsListView.as_view(), name="my-tests"),
     path("teacher/my-subject/<int:pk>/add-to-group/", views.MySubjectAddToGroupView.as_view(), name="my-subject-add-to-group"),

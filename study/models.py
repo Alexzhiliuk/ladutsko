@@ -123,7 +123,7 @@ class Lesson(models.Model):
         verbose_name_plural = "Занятия"
 
     def __str__(self):
-        return f"{self.name} ({self.type})"
+        return f"{self.name} ({self.get_type_display()})"
 
     def get_test_best_try(self):
         tries = [try_.score for try_ in Try.objects.filter(test=self.test)]
