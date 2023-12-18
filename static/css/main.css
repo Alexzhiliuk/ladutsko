@@ -27,7 +27,8 @@ body {
 .container {
 	max-width: 1240px;
 	padding: 0 20px;
-	margin: 0 auto
+	margin: 0 auto;
+	position: relative;
 }
 
 .mt-40 {
@@ -99,6 +100,12 @@ input::placeholder {
 	background: var(--red);
 }
 
+.btn.btn-table {
+    padding: 10px;
+    font-size: 16px;
+    font-weight: 500;
+}
+
 button[type='submit'],
 button.submit {
 	width: 100%;
@@ -109,6 +116,12 @@ button.submit {
 	padding: 50px 0;
 	background: var(--green);
 }
+
+.logo img {
+    width: 100%;
+    max-width: 80px;
+}
+
 
 .main {
 	flex: 1 1 100%;
@@ -294,5 +307,36 @@ button.submit {
 .message.success {
     background: var(--green);
     color: white;
+}
+
+.back {
+    display: inline-block;
+    margin-bottom: 20px;
+    font-size: 16px;
+    font-weight: 500;
+    text-decoration: none;
+    color: white;
+    border-radius: 10px;
+	background: var(--gray);
+	padding: 10px 20px;
+}
+
+
+.about {
+    position: absolute;
+    right: 0;
+    top: 50px;
+    width: 540px;
+    padding: 20px;
+    background: rgba(49, 212, 153, 0.5);
+    border-radius: 20px;
+    border: 1px solid  var(--gray);
+}
+
+.about-text {
+    margin-top: 20px;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 1.5;
 }
 

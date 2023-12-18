@@ -10,37 +10,50 @@
 
 {% block content %}
 <section >
-    <h1 class="h1">Моя группа</h1>
-    {% if user.study_groups.first %}
-    <div class="table-wrapper mt-40">
-        <table class="table">
+    <h1 class="h1">Группы</h1>
+    <div class="table-wrapper">
+        {% for group in groups %}
+        <table class="table mt-40">
             <thead>
+                <tr>
+                    <th colspan="4">Группа {{ group.number }}</th>
+                </tr>
                 <tr>
                     <th>Имя</th>
                     <th>Фамилия</th>
                     <th>Отчество</th>
                     <th>Email</th>
-                    <th>Действие</th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody>
-                {% for object in objects %}
+                {% for student in group.students.all %}
                 <tr>
-                    <td>{{ object.first_name|default:"-" }}</td>
-                    <td>{{ object.last_name|default:"-" }}</td>
-                    <td>{{ object.profile.middle_name|default:"-" }}</td>
-                    <td>{{ object.email|default:"-" }}</td>
-                    <td>
-                        <a href="{% url 'my-group-exclude-student' object.pk %}" class="table__foreign-key confirm">Исключить</a>
-                    </td>
+                    <td>{{ student.first_name|default:"-" }}</td>
+                    <td>{{ student.last_name|default:"-" }}</td>
+                    <td>{{ student.profile.middle_name|default:"-" }}</td>
+                    <td>{{ student.email|default:"-" }}</td>
+                    <td><a href="{% url 'group-student-grade' student.pk %}" class="btn btn-table">успеваемость</a></td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
+        {% endfor %}
     </div>
-    {% else %}
-    <a href="{% url 'my-group-create' %}" class="btn mt-40">Создать группу</a>
-    {% endif %}
+<!--    <section class="section">-->
+<!--        <h2 class="h2 mt-40">Активные дисциплины</h2>-->
+<!--        <div class="menu mt-40">-->
+<!--            {% for subject in group.subject_set.all %}-->
+<!--            <div>-->
+<!--                <a href="#" class="menu__item">-->
+<!--                    {{ subject.name }}-->
+<!--                </a>-->
+<!--                <a href="{% url 'remove-subject-from-group' subject.id %}">Исключить</a>-->
+<!--            </div>-->
+<!--            {% endfor %}-->
+<!--        </div>-->
+<!--    </section>-->
+
 
 </section>
 <script>

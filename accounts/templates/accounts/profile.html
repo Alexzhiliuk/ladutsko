@@ -32,7 +32,11 @@
         </div>
         <div class="form__item">
             <label class="form__label">Группа</label>
-            <input class="form__input" value="{{ profile_form.group }}" disabled>
+            {% if user.profile.type == 3 %}
+            <input class="form__input" value="{{ user.group_set.first }}" disabled>
+            {% else %}
+            <input class="form__input" value="{{ user.study_groups.first }}" disabled>
+            {% endif %}
         </div>
 
         <div class="form__item">
