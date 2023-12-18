@@ -170,7 +170,6 @@ class Lesson(models.Model):
         return False
 
 
-
 class LessonPhoto(models.Model):
     photo = models.ImageField(upload_to="lessons/photos/")
     lesson = models.ForeignKey(Lesson, related_name="photos", on_delete=models.CASCADE)

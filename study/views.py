@@ -1292,16 +1292,25 @@ class UploadSubjectsView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         form = ExcelForm(request.POST, request.FILES)
         if form.is_valid():
-            df = pd.read_excel(request.FILES['excel'], names=["name", "owner"])
+            df = pd.read_excel(request.FILES['excel'], names=["name", "teacher", "group"])
+            first_iter = True
             for index, row in df.iterrows():
-                name, owner = row["name"], User.objects.filter(username=row["owner"]).first()
-                if not(pd.isna(name)) and owner:
-                    Subject.objects.get_or_create(name=name, owner=owner)
+                if first_iter:
+                    first_iter = False
+                    continue
+                name = row["name"]
+                teacher = User.objects.filter(username=row["teacher"]).first()
+                group = Group.objects.filter(number=row["group"]).first()
+                if not(pd.isna(name)) and teacher and group:
+                    subject = Subject.objects.get_or_create(name=name)
+                    TeacherGroupSubject.objects.get_or_create(teacher=teacher, subject=subject[0], group=group)
                 elif not(pd.isna(name)):
                     Subject.objects.get_or_create(name=name)
             messages.success(request, "Дисциплины успешно загружены")
 
-        return redirect(reverse("subjects"))
+        if request.user.profile.type == 1:
+            return redirect(reverse("subjects"))
+        return redirect(reverse("my-subjects"))
 
     def get(self, request, *args, **kwargs):
         form = ExcelForm()
@@ -1313,19 +1322,29 @@ class UploadLessonsView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         form = ExcelForm(request.POST, request.FILES)
         if form.is_valid():
-            df = pd.read_excel(request.FILES['excel'], names=["name", "text", "subject"])
+            df = pd.read_excel(request.FILES['excel'], names=["name", "type", "subject", "teacher", "group", "text"])
+            first_iter = True
             for index, row in df.iterrows():
+                if first_iter:
+                    first_iter = False
+                    continue
 
-                subject = None if pd.isna(row["subject"]) else Subject.objects.filter(id=row["subject"]).first()
+                subject = Subject.objects.filter(name=row["subject"]).first()
+                teacher = User.objects.filter(username=row["teacher"]).first()
+                group = Group.objects.filter(number=row["group"]).first()
+                subject = TeacherGroupSubject.objects.filter(teacher=teacher, subject=subject, group=group).first()
                 name = None if pd.isna(row["name"]) else row["name"]
                 text = None if pd.isna(row["text"]) else row["text"]
+                l_type = None if pd.isna(row["type"]) else row["type"]
 
-                if name:
-                    Lesson.objects.get_or_create(name=name, text=text, subject=subject)
+                if name and l_type and subject:
+                    Lesson.objects.get_or_create(name=name, text=text, subject=subject, type=l_type)
 
             messages.success(request, "Занятия успешно загружены")
 
-        return redirect(reverse("lessons"))
+        if request.user.profile.type == 1:
+            return redirect(reverse("lessons"))
+        return redirect(reverse("my-lessons"))
 
     def get(self, request, *args, **kwargs):
         form = ExcelForm()
