@@ -7,11 +7,48 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/select.css' %}">
+<link rel="stylesheet" href="{% static 'css/table.css' %}">
 {% endblock %}
 
 {% block content %}
 <a href="{% url 'my-lessons' %}" class="back">Назад</a>
-<section class="section-teachers">
+
+{% if lesson.type == "IW" %}
+<section>
+    <h2 class="h2">Работы студентов</h2>
+    <div class="table-wrapper mt-40">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Балл</th>
+                    <th>Имя</th>
+                    <th>Фамилия</th>
+                    <th>Отчетсво</th>
+                    <th>Email</th>
+                    <th>Группа</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for work in lesson.student_works.all %}
+                <tr>
+                    <td>{% if not work.score %}<a href="{% url 'lesson-check-work' work.pk %}" class="btn btn-table">Проверить</a>{% else %}{{ work.score }}{% endif %}</td>
+                    <td>{{ work.user.first_name|default:"-" }}</td>
+                    <td>{{ work.user.last_name|default:"-" }}</td>
+                    <td>{{ work.user.profile.middle_name|default:"-" }}</td>
+                    <td>
+                        {{ work.user.username }}
+                    </td>
+                    <td>
+                        {{ work.user.group_set.first.id }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endif %}
+<section class="section-teachers mt-40">
     <h1 class="h1 h1_center">Занятие</h1>
 
     <form action="." method="POST" class="form form_left form_full-w mt-40" enctype="multipart/form-data">

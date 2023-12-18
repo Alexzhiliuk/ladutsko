@@ -1,6 +1,7 @@
 from django import forms
 from accounts.forms import ProfileEditForm
-from .models import Group, Subject, TeacherGroupSubject, Lesson, Test, Question, Answer, LessonPhoto
+from .models import Group, Subject, TeacherGroupSubject, Lesson, Test, Question, Answer, LessonPhoto, \
+    StudentIndividualWork
 from django.contrib.auth.models import User
 
 
@@ -139,6 +140,20 @@ class ExcelForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super(ExcelForm, self).__init__(*args, **kwargs)
+
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form__input'
+
+
+class StudentWorkForm(forms.ModelForm):
+
+    class Meta:
+        model = StudentIndividualWork
+        fields = ("file", )
+        labels = {"file": "Файл"}
+
+    def __init__(self, *args, **kwargs):
+        super(StudentWorkForm, self).__init__(*args, **kwargs)
 
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form__input'

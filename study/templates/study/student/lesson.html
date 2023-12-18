@@ -48,6 +48,25 @@
     <h2 class="h2 mt-40">Тест <span class="test-score">{{ best_try|floatformat:0 }}/100</span></h2>
     <a href="{% url 'student-test' lesson.test.pk %}" class="btn mt-20">Пройти</a>
     {% endif %}
+
+    {% if lesson.type == "IW" %}
+    {% if work_score %}
+    <p>Ваша оценка: <b>{{ work_score }}</b></p>
+    {% else %}
+    <p>Вы еще не отправили свою работу</p>
+    {% endif %}
+    <h2 class="h2">Загрузите свою работу</h2>
+    <form action="{% url 'student-individual-work' lesson.pk %}" method="POST" class="form form_left mt-40" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="form__item">
+            <label for="{{work_form.file.id_for_label}}" class="form__label">{{work_form.file.label}}</label>
+            {{ work_form.file }}
+        </div>
+        <div class="form__item">
+            <button type="submit" class="btn">Загрузить</button>
+        </div>
+    </form>
+    {% endif %}
 </section>
 
 <script>

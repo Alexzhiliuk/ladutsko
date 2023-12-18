@@ -1,7 +1,8 @@
 from django.contrib import admin
 
 from .models import (
-    Group, Subject, TeacherGroupSubject, Lesson, LessonPhoto, LessonVideo, Test, Question, Answer, Try, StudentAnswer
+    Group, Subject, TeacherGroupSubject, Lesson, LessonPhoto,
+    LessonVideo, Test, Question, Answer, Try, StudentAnswer, StudentIndividualWork
 )
 
 
@@ -58,3 +59,8 @@ class TryAdmin(admin.ModelAdmin):
 @admin.register(StudentAnswer)
 class StudentAnswerAdmin(admin.ModelAdmin):
     list_display = ["user", "question", "answer", "student_try"]
+
+
+@admin.register(StudentIndividualWork)
+class StudentIndividualWorkAdmin(admin.ModelAdmin):
+    list_display = ["user", "lesson", "score"]

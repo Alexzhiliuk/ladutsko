@@ -22,9 +22,9 @@ from .decorators.is_teacher import teacher_only
 from .forms import (
     StudentForm, GroupForm, SubjectForm, LessonForm, QuestionForm, AnswerForm,
     ExcelForm, TeacherGroupSubjectForm,
-    GroupForTeacherSubjectForm, TestForm)
+    GroupForTeacherSubjectForm, TestForm, StudentWorkForm)
 from .models import Group, TeacherGroupSubject, Subject, Lesson, LessonPhoto, Test, Question, Answer, Try, LessonVideo, \
-    StudentAnswer, LessonFile
+    StudentAnswer, LessonFile, StudentIndividualWork
 
 
 class IndexView(LoginRequiredMixin, View):
@@ -682,6 +682,30 @@ def delete_lesson(request, pk):
 
 
 @method_decorator(not_student, name="dispatch")
+class CheckStudentWork(LoginRequiredMixin, View):
+
+    def post(self, request, pk, *args, **kwargs):
+        work = get_object_or_404(StudentIndividualWork, pk=pk)
+
+        score = request.POST.get("work-score")
+        work.score = score
+        work.save()
+
+        messages.success(request, f"Работа студента {work.user} проверена")
+
+        if request.user.profile == 1:
+            return redirect(reverse("lesson", kwargs={"pk": work.lesson.pk}))
+        return redirect(reverse("my-lesson", kwargs={"pk": work.lesson.pk}))
+
+    def get(self, request, pk, *args, **kwargs):
+        work = get_object_or_404(StudentIndividualWork, pk=pk)
+
+        return render(request, "study/lesson/check-work.html", {
+            "work": work,
+        })
+
+
+@method_decorator(not_student, name="dispatch")
 class TestsListView(LoginRequiredMixin, ListView):
     model = Test
     context_object_name = "objects"
@@ -1147,10 +1171,48 @@ class StudentLessonView(LoginRequiredMixin, View):
         if lesson.test:
             my_best_try = lesson.get_test_user_best_try(user)
 
+        work_form, work_score = None, None
+
+        if lesson.type == "IW":
+            work_form = StudentWorkForm()
+            student_work = StudentIndividualWork.objects.filter(user=user, lesson=lesson).first()
+            if student_work:
+                work_score = student_work.score or "Проверяется"
+            else:
+                work_score = None
+
         return render(request, "study/student/lesson.html", {
             "lesson": lesson,
             "best_try": my_best_try,
+            "work_score": work_score,
+            "work_form": work_form
         })
+
+
+class StudentIndividualWorkView(LoginRequiredMixin, View):
+
+    def post(self, request, *args, **kwargs):
+        user = self.request.user
+        lesson = get_object_or_404(Lesson, pk=kwargs["pk"])
+
+        if not user.group_set.first():
+            return HttpResponse("No permission")
+        if user.group_set.first() != lesson.subject.group:
+            return HttpResponse("No permission")
+
+        if StudentIndividualWork.objects.filter(user=user, lesson=lesson):
+            messages.error(request, "Вы уже отправили работу")
+            return redirect(reverse("student-lesson", kwargs=self.kwargs))
+
+        work_form = StudentWorkForm(request.POST, request.FILES)
+        if work_form.is_valid():
+            work = work_form.save(commit=False)
+            work.user = user
+            work.lesson = lesson
+            work.save()
+            messages.success(request, "Работа отправлена на проверку")
+
+        return redirect(reverse("student-lesson", kwargs=self.kwargs))
 
 
 class StudentTestView(LoginRequiredMixin, View):

@@ -41,6 +41,7 @@ urlpatterns = [
     path("lesson/remove-photo/<int:pk>/", views.delete_lesson_photo, name="lesson-remove-photo"),
     path("lesson/remove-video/<int:pk>/", views.delete_lesson_video, name="lesson-remove-video"),
     path("lesson/remove-file/<int:pk>/", views.delete_lesson_file, name="lesson-remove-file"),
+    path("lesson/check-work/<int:pk>/", views.CheckStudentWork.as_view(), name="lesson-check-work"),
 
     path("tests/", views.TestsListView.as_view(), name="tests"),
     path("test/<int:pk>/", views.TestEditView.as_view(), name="test"),
@@ -75,6 +76,7 @@ urlpatterns = [
 
     path("student/subject/<int:pk>/", views.StudentSubjectView.as_view(), name="student-subject"),
     path("student/lesson/<int:pk>/", views.StudentLessonView.as_view(), name="student-lesson"),
+    path("student/lesson/<int:pk>/individual-work/", views.StudentIndividualWorkView.as_view(), name="student-individual-work"),
     path("student/test/<int:pk>/", views.StudentTestView.as_view(), name="student-test"),
 
     path("about/", views.about, name="about"),

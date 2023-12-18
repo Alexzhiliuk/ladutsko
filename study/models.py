@@ -124,6 +124,7 @@ class Lesson(models.Model):
         PRACTICAL = "PR", "Практическое занятия"
         LABORATORY = "LR", "Лабораторное занятие"
         CONTROL = "CW", "Контрольная работа"
+        INDIVIDUAL = "IW", "Индивидуальное практическое занятие"
 
     type = models.CharField("Тип", max_length=32, choices=Type.choices)
     subject = models.ForeignKey(TeacherGroupSubject, related_name="lessons", on_delete=models.CASCADE, null=True, blank=True)
@@ -224,3 +225,18 @@ class StudentAnswer(models.Model):
 
     def __str__(self):
         return f"{self.answer[:10]}... ({self.question.test})"
+
+
+class StudentIndividualWork(models.Model):
+
+    file = models.FileField(upload_to="lessons/students-works/")
+    user = models.ForeignKey(User, related_name="individual_works", on_delete=models.CASCADE)
+    lesson = models.ForeignKey(Lesson, related_name="student_works", on_delete=models.CASCADE)
+    score = models.IntegerField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = "Работа стундента"
+        verbose_name_plural = "Работы студентов"
+
+    def __str__(self):
+        return f"{self.user} - {self.lesson.name}"
