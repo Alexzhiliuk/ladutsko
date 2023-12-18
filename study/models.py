@@ -56,7 +56,8 @@ class Test(models.Model):
     def get_question_score(self):
         return 100 / self.questions.count()
 
-    def calculate_score(self, data):
+    def calculate_score(self, data, user):
+        need_check = False  # нужна ли проверка от преподавателя
         question_score = self.get_question_score()  # максимальный балл за вопрос
         try_score = 0  # итоговый балл
         for question in self.questions.all():
@@ -70,11 +71,11 @@ class Test(models.Model):
                         correct_choices += 1
                 try_score += question_score * (correct_choices / len(answers))
             elif question.type == "TX":
-                answer = question.answers.first()
-                if data.get(str(answer.pk)).lower().strip() == answer.text.lower().strip():
-                    try_score += question_score
+                student_answer = data.get(str(question.answers.first().pk))
+                StudentAnswer.objects.create(user=user, question=question, answer=student_answer)
+                need_check = True
 
-        return try_score
+        return try_score, need_check
 
 
 class Question(models.Model):
@@ -170,6 +171,7 @@ class Try(models.Model):
     user = models.ForeignKey(User, related_name="tests_tries", on_delete=models.CASCADE)
     test = models.ForeignKey(Test, related_name="users_tries", on_delete=models.CASCADE)
     score = models.FloatField()
+    need_check = models.BooleanField(default=False)
 
     class Meta:
         verbose_name = "Попытка"
@@ -177,3 +179,28 @@ class Try(models.Model):
 
     def __str__(self):
         return f"[{self.score}]{self.user} ({self.test})"
+
+    def checking(self, data):
+        question_score = self.test.get_question_score()  # максимальеый балл за вопрос
+        checking_score = 0  # баллы за проверку
+
+        for answer in self.students_answers.all():
+            checking_score += int(data.get(str(answer.pk), 0))
+
+        self.score += question_score * (checking_score / 10)
+        self.need_check = False
+        self.save()
+
+
+class StudentAnswer(models.Model):
+    answer = models.CharField(max_length=512)
+    question = models.ForeignKey(Question, related_name="students_answers", on_delete=models.CASCADE)
+    user = models.ForeignKey(User, related_name="test_answers", on_delete=models.CASCADE)
+    student_try = models.ForeignKey(Try, related_name="students_answers", on_delete=models.CASCADE, null=True)
+
+    class Meta:
+        verbose_name = "Ответ студента"
+        verbose_name_plural = "Ответы студентов"
+
+    def __str__(self):
+        return f"{self.answer[:10]}... ({self.question.test})"

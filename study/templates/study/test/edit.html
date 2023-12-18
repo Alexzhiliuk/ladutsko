@@ -78,7 +78,7 @@
             <tbody>
                 {% for try in test.users_tries.all %}
                 <tr>
-                    <td>{{ try.score|floatformat:0 }}/100</td>
+                    <td>{% if try.need_check %}<a href="{% url 'test-try-check' try.pk %}" class="btn btn-table">Проверить</a>{% else %}{{ try.score|floatformat:0 }}/100{% endif %}</td>
                     <td>{{ try.user.first_name|default:"-" }}</td>
                     <td>{{ try.user.last_name|default:"-" }}</td>
                     <td>{{ try.user.profile.middle_name|default:"-" }}</td>

@@ -50,6 +50,8 @@ urlpatterns = [
     path("test/<int:test_pk>/question/<int:question_pk>/delete", views.delete_question, name="test-question-delete"),
     path("test/<int:test_id>/download-tries/", views.download_test_tries, name="test-download-tries"),
 
+    path("test/try/<int:pk>/check/", views.CheckTestView.as_view(), name="test-try-check"),
+
     path("question/<int:pk>/add-answer-variant/", views.add_answer_variant, name="add-answer-variant"),
     path("question/<int:pk>/add-correct-text-answer/", views.add_correct_text_answer, name="add-correct-text-answer"),
     path("answer/delete/<int:pk>/", views.delete_answer, name="answer-delete"),

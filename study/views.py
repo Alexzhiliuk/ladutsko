@@ -23,7 +23,8 @@ from .forms import (
     StudentForm, GroupForm, SubjectForm, LessonForm, QuestionForm, AnswerForm,
     ExcelForm, TeacherGroupSubjectForm,
     GroupForTeacherSubjectForm, TestForm)
-from .models import Group, TeacherGroupSubject, Subject, Lesson, LessonPhoto, Test, Question, Answer, Try, LessonVideo
+from .models import Group, TeacherGroupSubject, Subject, Lesson, LessonPhoto, Test, Question, Answer, Try, LessonVideo, \
+    StudentAnswer
 
 
 class IndexView(LoginRequiredMixin, View):
@@ -682,6 +683,25 @@ class TestCreateView(LoginRequiredMixin, View):
         })
 
 
+@method_decorator(not_student, name="dispatch")
+class CheckTestView(LoginRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
+        student_try = get_object_or_404(Try, pk=kwargs["pk"])
+
+        student_try.checking(request.POST)
+
+        messages.success(request, "Тест проверен")
+
+        return redirect(reverse("test", kwargs={"pk": student_try.test.pk}))
+
+    def get(self, request, *args, **kwargs):
+        student_try = get_object_or_404(Try, pk=kwargs["pk"])
+
+        return render(request, "study/test/check.html", {
+            "try": student_try
+        })
+
+
 @not_student
 def delete_test(request, pk):
 
@@ -704,6 +724,9 @@ class TestQuestionCreateView(LoginRequiredMixin, View):
             new_question.test = get_object_or_404(Test, pk=pk)
             new_question.save()
             messages.success(request, "Вопрос создан!")
+
+            if new_question.type == "TX":
+                Answer.objects.create(question=new_question, text="Ответ")
 
             answer_num = 1
             while True:
@@ -1077,9 +1100,16 @@ class StudentTestView(LoginRequiredMixin, View):
         if not user.group_set.first():
             return HttpResponse("No permission")
 
-        score = test.calculate_score(request.POST)
-        Try.objects.create(user=user, test=test, score=score)
-        messages.success(request, f"Ваш балл составил {score}")
+        score, need_check = test.calculate_score(request.POST, user)
+        student_try = Try.objects.create(user=user, test=test, score=score, need_check=need_check)
+        for student_answer in StudentAnswer.objects.filter(user=user, question__test=test, student_try__isnull=True):
+            student_answer.student_try = student_try
+            student_answer.save()
+
+        if need_check:
+            messages.success(request, f"Ваш тест отправлен на проверку")
+        else:
+            messages.success(request, f"Ваш балл составил {score}")
 
         return redirect(reverse("student-lesson", kwargs={"pk": test.lesson.pk}))
 
