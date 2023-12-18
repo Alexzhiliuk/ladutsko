@@ -693,7 +693,7 @@ class CheckStudentWork(LoginRequiredMixin, View):
 
         messages.success(request, f"Работа студента {work.user} проверена")
 
-        if request.user.profile == 1:
+        if request.user.profile.type == 1:
             return redirect(reverse("lesson", kwargs={"pk": work.lesson.pk}))
         return redirect(reverse("my-lesson", kwargs={"pk": work.lesson.pk}))
 
@@ -1242,6 +1242,10 @@ class StudentTestView(LoginRequiredMixin, View):
 
         if not user.group_set.first():
             return HttpResponse("No permission")
+
+        if test.lesson.is_late():
+            messages.error(request, "Возможности сдать тест больше нет!")
+            return redirect(reverse("student-lesson", kwargs={"pk": test.lesson.pk}))
 
         return render(request, "study/student/test.html", {
             "test": test,

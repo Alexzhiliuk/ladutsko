@@ -46,7 +46,14 @@
 
     {% if lesson.test %}
     <h2 class="h2 mt-40">Тест <span class="test-score">{{ best_try|floatformat:0 }}/100</span></h2>
+
+    {% if lesson.is_late %}
+    <span class="back mt-20">Пройти</span>
+    {% else %}
+    <p class="mt-20">Cрок сдачи: {{ lesson.deadline }}</p>
     <a href="{% url 'student-test' lesson.test.pk %}" class="btn mt-20">Пройти</a>
+    {% endif %}
+
     {% endif %}
 
     {% if lesson.type == "IW" %}

@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
+from datetime import datetime as dt
+import pytz
 
 
 class Group(models.Model):
@@ -41,6 +43,14 @@ class TeacherGroupSubject(models.Model):
     @property
     def name_for_student(self):
         return f"{self.subject} ({self.teacher})"
+
+    def get_user_average_score(self, user):
+        lessons = self.lessons.filter(test__isnull=False)
+        score = sum(lesson.get_test_user_best_try(user) for lesson in lessons)
+        count = len(lessons)
+        if count:
+            return round(score / count / 10)
+        return None
 
 
 class Test(models.Model):
@@ -131,6 +141,7 @@ class Lesson(models.Model):
     name = models.CharField(max_length=128)
     test = models.OneToOneField(Test, on_delete=models.SET_NULL, null=True, blank=True)
     text = models.TextField(null=True, blank=True)
+    deadline = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         verbose_name = "Занятие"
@@ -150,6 +161,14 @@ class Lesson(models.Model):
         if tries:
             return max(tries)
         return 0
+
+    def is_late(self):
+        utc = pytz.UTC
+        now = utc.localize(dt.now())
+        if now > self.deadline:
+            return True  # уже поздно
+        return False
+
 
 
 class LessonPhoto(models.Model):

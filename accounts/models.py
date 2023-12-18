@@ -21,6 +21,16 @@ class Profile(models.Model):
     def __str__(self):
         return "Профиль пользователя %s" % self.user
 
+    def get_grade(self):
+        grade = {}
+        for subject in self.user.group_set.first().subjects.all():
+            subject_average_score = subject.get_user_average_score(self.user)
+            if subject_average_score:
+                grade[subject] = subject_average_score
+            else:
+                grade[subject] = "-"
+        return grade
+
 
 def create_user_profile(sender, instance, created, **kwargs):
     if created:

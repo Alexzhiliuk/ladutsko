@@ -16,9 +16,9 @@
         <table class="table">
             <thead>
                 <tr>
-                    <th>Название</th>
-                    <th>Тип</th>
                     <th>Дисциплина</th>
+                    <th>Тип</th>
+                    <th>Название</th>
                     <th>Группа</th>
                     <th>Тест</th>
                     <th></th>
@@ -27,11 +27,11 @@
             <tbody>
                 {% for object in objects %}
                 <tr>
-                    <td>{{ object.name|default:"-" }}</td>
-                    <td>{{ object.get_type_display }}</td>
                     <td>
                         <a href="{% url 'my-subject' object.subject.subject.pk %}" class="table__foreign-key">{{ object.subject.subject }}</a>
                     </td>
+                    <td>{{ object.get_type_display }}</td>
+                    <td>{{ object.name|default:"-" }}</td>
                     <td>
                         {{ object.subject.group }}
                     </td>

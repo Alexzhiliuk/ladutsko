@@ -80,8 +80,15 @@ class LessonForm(forms.ModelForm):
 
     class Meta:
         model = Lesson
-        fields = ("name", "type", "subject", "test", "text")
-        labels = {"name": "Название", "type": "Тип занятия", "subject": "Дисциплина", "test": "Тест", "text": "Текст"}
+        fields = ("name", "type", "subject", "test", "text", "deadline")
+        labels = {
+            "name": "Название",
+            "type": "Тип занятия",
+            "subject": "Дисциплина",
+            "test": "Тест",
+            "text": "Текст",
+            "deadline": "Срок сдачи"
+        }
 
     def __init__(self, *args, **kwargs):
         super(LessonForm, self).__init__(*args, **kwargs)

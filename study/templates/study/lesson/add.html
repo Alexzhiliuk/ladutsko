@@ -73,6 +73,10 @@
             </div>
         </div>
         <div class="form__item">
+            <label for="{{ form.deadline.id_for_label }}" class="form__label">{{ form.deadline.label }}</label>
+            {{ form.deadline }}
+        </div>
+        <div class="form__item">
             <label for="{{ form.videos.id_for_label }}" class="form__label">{{ form.videos.label }}</label>
             {{ form.videos }}
         </div>
@@ -97,6 +101,8 @@
 </section>
 
 <script>
+    $("#id_deadline").attr('type', 'datetime-local')
+
     $("select").prop('hidden', true)
     $("select#{{ form.subject.id_for_label }} option:first").remove()
 
