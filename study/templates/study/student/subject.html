@@ -9,8 +9,11 @@
         {{ subject.subject.name }}
     </h1>
     <div class="menu mt-40">
+        {% for type, lessons in lessons.items %}
+        <h2 class="h2">{{ type }}</h2>
         {% for lesson in lessons %}
         <a href="{% url 'student-lesson' lesson.pk %}" class="menu__item">{{ lesson.name }}</a>
+        {% endfor %}
         {% endfor %}
     </div>
 </section>

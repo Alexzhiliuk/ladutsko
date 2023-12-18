@@ -529,6 +529,11 @@ class LessonsListView(LoginRequiredMixin, ListView):
             qs = qs.filter(subject=subject)
         return qs
 
+    def get_ordering(self):
+        ordering = self.request.GET.get('ordering', '')
+        # validate ordering here
+        return ordering
+
 
 @method_decorator(admin_only, name="dispatch")
 class LessonEditView(LoginRequiredMixin, View):
@@ -1065,9 +1070,13 @@ class StudentSubjectView(LoginRequiredMixin, View):
         if user.group_set.first() != subject.group:
             return HttpResponse("No permission")
 
+        lessons = {l_type[1]: [] for l_type in Lesson.type.field.choices}
+        for lesson in subject.lessons.all():
+            lessons[lesson.get_type_display()].append(lesson)
+
         return render(request, "study/student/subject.html", {
             "subject": subject,
-            "lessons": subject.lessons.all()
+            "lessons": lessons,
         })
 
 
