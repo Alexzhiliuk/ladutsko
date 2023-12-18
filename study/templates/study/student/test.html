@@ -16,7 +16,7 @@
         {% for question in test.questions.all %}
         <div class="form__item">
             <label class="form__label">{{ question.text }}</label>
-            {% if question.type == 2 %}
+            {% if question.type == "CH" %}
             <div class="checkbox" role="test">
                 {% for answer in question.answers.all %}
                 <div class="checkbox__item" data-value="{{ answer.pk }}">

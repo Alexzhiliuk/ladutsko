@@ -16,20 +16,21 @@
         <table class="table">
         <thead>
             <tr>
-                <th>ID</th>
                 <th>Название</th>
-                <th>Владелец</th>
+                <th>Занятие</th>
+                <th></th>
             </tr>
         </thead>
         <tbody>
             {% for object in objects %}
             <tr>
-                <td>
-                    <a href="{% url 'test' object.pk %}" class="table__object-url">{{ object.id }}</a>
-                </td>
                 <td>{{ object.name|default:"-" }}</td>
                 <td>
-                    {% if object.owner %}<a href="{% url 'teacher' object.owner.pk %}" class="table__foreign-key">{{ object.owner }}</a>{% endif %}
+                    {% if object.lesson %}
+                    <a href="{% if user.profile.type == 2 %}{% url 'my-lesson' object.lesson.pk %}{% else %}{% url 'lesson' object.lesson.pk %}{% endif %}">{{ object.lesson }}</a>
+                    {% else %}
+                    Не привязан к занятию
+                    {% endif %}
                 </td>
                 <td>
                     <a href="{% url 'test' object.pk %}" class="btn btn-table">изменить</a>

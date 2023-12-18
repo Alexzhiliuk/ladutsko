@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% load util %}
+{% load static %}
+
+
+{% block page_title %}Успеваемость{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/table.css' %}">
+{% endblock %}
+
+{% block content %}
+{% if user.profile.type == 1 %}
+<a href="{% url 'students' %}" class="back">Назад</a>
+{% else %}
+<a href="{% url 'my-group' %}" class="back">Назад</a>
+{% endif %}
+<section >
+    <h1 class="h1">Успеваемость студента {{ student }}</h1>
+    <div class="table-wrapper mt-40">
+        <table class="table">
+        <thead>
+            <tr>
+                <th>Дисциплина</th>
+                <th>Преподаватель</th>
+                <th>Оценка</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for subject, score in grade.items %}
+            <tr>
+                <td>{{ subject.subject }}</td>
+                <td>{{ subject.teacher }}</td>
+                <td>{{ score }}</td>
+            </tr>
+            {% endfor %}
+
+        </tbody>
+    </table>
+    </div>
+
+</section>
+{% endblock %}

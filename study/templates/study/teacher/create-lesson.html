@@ -3,7 +3,7 @@
 {% load static %}
 
 
-{% block page_title %}Урок{% endblock %}
+{% block page_title %}Занятие{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/select.css' %}">
@@ -12,13 +12,30 @@
 {% block content %}
 <a href="{% url 'my-lessons' %}" class="back">Назад</a>
 <section class="section-teachers">
-    <h1 class="h1 h1_center">Урок</h1>
+    <h1 class="h1 h1_center">Занятие</h1>
 
     <form action="." method="POST" class="form form_left form_full-w mt-40" enctype="multipart/form-data">
         {% csrf_token %}
         <div class="form__item">
             <label for="{{ form.name.id_for_label }}" class="form__label">{{ form.name.label }}</label>
             {{ form.name }}
+        </div>
+        <div class="form__item">
+            <label for="{{ form.type.id_for_label }}" class="form__label">{{ form.type.label }}</label>
+            <div class="form__input select" role="close">
+                <div class="select__selected">---</div>
+                <div class="select__options">
+                    {% for type in types %}
+                    <div class="select__option" data-value="{{ type.0 }}">{{ type.1 }}</div>
+                    {% endfor %}
+                </div>
+                <div class="select__icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="10" viewBox="0 0 18 10" fill="none">
+                        <path fill-rule="evenodd" clip-rule="evenodd" d="M8.25532 9.5127L0.642136 1.89952C0.251612 1.50899 0.251612 0.875826 0.642136 0.485302C1.03266 0.0947777 1.66583 0.0947777 2.05635 0.485302L8.98336 7.41231L16.3121 0.466567C16.713 0.0866574 17.3459 0.10364 17.7258 0.504499C18.1057 0.905357 18.0887 1.53829 17.6879 1.9182L9.65486 9.53141C9.26318 9.90536 8.64248 9.89986 8.25753 9.51491L8.25532 9.5127Z" fill="#B8B8B8"/>
+                    </svg>
+                </div>
+                {{ form.type }}
+            </div>
         </div>
         <div class="form__item">
             <label for="{{ form.subject.id_for_label }}" class="form__label">{{ form.subject.label }}</label>
@@ -56,12 +73,20 @@
             </div>
         </div>
         <div class="form__item">
-            <label for="{{ form.video.id_for_label }}" class="form__label">{{ form.video.label }}</label>
-            {{ form.video }}
+            <label for="{{ form.deadline.id_for_label }}" class="form__label">{{ form.deadline.label }}</label>
+            {{ form.deadline }}
         </div>
         <div class="form__item">
-            <label for="{{ form.photo.id_for_label }}" class="form__label">{{ form.photo.label }}</label>
-            {{ form.photo }}
+            <label for="{{ form.videos.id_for_label }}" class="form__label">{{ form.videos.label }}</label>
+            {{ form.videos }}
+        </div>
+        <div class="form__item">
+            <label for="{{ form.photo.id_for_label }}" class="form__label">{{ form.photos.label }}</label>
+            {{ form.photos }}
+        </div>
+        <div class="form__item">
+            <label for="{{ form.files.id_for_label }}" class="form__label">{{ form.files.label }}</label>
+            {{ form.files }}
         </div>
         <div class="form__item">
             <label for="{{ form.text.id_for_label }}" class="form__label">{{ form.text.label }}</label>
@@ -76,6 +101,7 @@
 </section>
 
 <script>
+    $("#id_deadline").attr('type', 'datetime-local')
     $("select").prop('hidden', true)
     $("select#{{ form.subject.id_for_label }} option:first").remove()
     $("select#{{ form.subject.id_for_label }} option[value='{{group.owner.pk}}']").prop('selected', true)

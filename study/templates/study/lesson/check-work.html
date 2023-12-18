@@ -3,64 +3,42 @@
 {% load static %}
 
 
-{% block page_title %}Дисциплина{% endblock %}
+{% block page_title %}Проверка работы{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/select.css' %}">
-<link rel="stylesheet" href="{% static 'css/table.css' %}">
 {% endblock %}
 
 {% block content %}
-<a href="{% url 'subjects' %}" class="back">Назад</a>
-<section class="section-subjects">
-    <h1 class="h1 h1_center">Дисциплина</h1>
+{% if user.profile.type == 1 %}
+<a href="{% url 'lesson' work.lesson.pk %}" class="back">Назад</a>
+{% else %}
+<a href="{% url 'my-lesson' work.lesson.pk %}" class="back">Назад</a>
+{% endif %}
+
+<section class="section-teachers mt-40">
+    <h1 class="h1 h1_center">Проверка работы</h1>
+    <p class="mt-20">Студент: {{ work.user }}</p>
+    <p class="mt-20">Работа: <a href="{{ work.file.url }}">{{ work.file|cut:"lessons/students-works/" }}</a></p>
 
     <form action="." method="POST" class="form mt-40">
         {% csrf_token %}
         <div class="form__item">
-            <label for="{{ form.name.id_for_label }}" class="form__label">{{ form.name.label }}</label>
-            {{ form.name }}
+            <label for="score" class="form__label">Оценка</label>
+            <input type="number" id="score" name="work-score" min="1" max="10" required>
         </div>
 
         <div class="form__item">
             <button type="submit" class="btn">Сохранить</button>
         </div>
-        <div class="form__item">
-            <a href="{% url 'subject-delete' subject.pk %}" class="btn btn_red confirm submit">Удалить</a>
-        </div>
 
     </form>
-
-
-    <div class="table-wrapper mt-40">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Группа</th>
-                    <th>Преподаватель</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in subject.items.all %}
-                <tr>
-                    <td><a href="{% url 'group' item.group.pk %}">{{ item.group }}</a></td>
-                    <td><a href="{% url 'teacher' item.teacher.pk %}">{{ item.teacher }}</a></td>
-                    <td>
-                        <a href="{% url 'lessons' %}?subject_pk={{item.pk}}" class="btn btn-table">занятия</a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
 
 </section>
 
 <script>
     $("select").prop('hidden', true)
-    $("select#{{ form.owner.id_for_label }} option:first").remove()
-    $("select#{{ form.owner.id_for_label }} option[value='{{subject.owner.pk}}']").prop('selected', true)
+    $("select#{{ form.subject.id_for_label }} option:first").remove()
 
 
     $(".select").on('click', function() {
@@ -97,7 +75,6 @@
         $(this).parent().parent().children("select").children('option').prop("selected", false)
         $(this).parent().parent().children("select").children(`option[value='${$(this).attr('data-value')}']`).prop("selected", true)
     })
-
 
     // Confirm
     $(".confirm.confirm-ajax").on('click', function(event) {

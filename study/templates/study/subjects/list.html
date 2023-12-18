@@ -16,27 +16,13 @@
         <table class="table">
         <thead>
             <tr>
-                <th>ID</th>
                 <th>Название</th>
-                <th>Преподаватель</th>
-                <th>Группы</th>
             </tr>
         </thead>
         <tbody>
             {% for object in objects %}
             <tr>
-                <td>
-                    <a href="{% url 'subject' object.id %}" class="table__object-url">{{ object.id }}</a>
-                </td>
                 <td>{{ object.name|default:"-" }}</td>
-                <td>
-                    {% if object.owner %}<a href="{% url 'teacher' object.owner.pk %}" class="table__foreign-key">{{ object.owner.username }}</a>{% endif %}
-                </td>
-                <td>
-                    {% for group in object.groups.all %}
-                    <a href="{% url 'group' group.pk %}" class="table__foreign-key">{{ group.id }}</a>,
-                    {% endfor %}
-                </td>
                 <td>
                     <a href="{% url 'subject' object.id %}" class="btn btn-table">изменить</a>
                 </td>

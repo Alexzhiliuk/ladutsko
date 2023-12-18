@@ -21,6 +21,19 @@ class Profile(models.Model):
     def __str__(self):
         return "Профиль пользователя %s" % self.user
 
+    def get_grade(self):
+        grade = {}
+        group = self.user.group_set.first()
+        if not group:
+            return grade
+        for subject in group.subjects.all():
+            subject_average_score = subject.get_user_average_score(self.user)
+            if subject_average_score:
+                grade[subject] = subject_average_score
+            else:
+                grade[subject] = "-"
+        return grade
+
 
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
@@ -36,11 +49,11 @@ class Application(models.Model):
     first_name = models.CharField(max_length=32)
     last_name = models.CharField(max_length=32)
     middle_name = models.CharField(max_length=32, null=True, blank=True)
-    group_id = models.IntegerField()
+    group_number = models.CharField(max_length=32)
 
     class Meta:
         verbose_name = "Заявка"
         verbose_name_plural = "Заявки"
 
     def __str__(self):
-        return f"{self.last_name} {self.first_name}, группа {self.group_id}"
+        return f"{self.last_name} {self.first_name}, группа {self.group_number}"

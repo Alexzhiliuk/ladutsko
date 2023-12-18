@@ -36,7 +36,7 @@
     </form>
 
 
-    {% if question.type == 2 %}
+    {% if question.type == "CH" %}
 
     <h3 class="h3 mt-40">Варианты ответа</h3>
     <div class="checkbox mt-40" role="show">
@@ -67,20 +67,6 @@
         </div>
     </form>
 
-    {% else %}
-
-    <h3 class="h3 mt-40">Правильный ответ</h3>
-     <form id="correct-answer-form" method="POST" action="{% url 'add-correct-text-answer' question.pk %}" class="form form_left mt-40">
-        {% csrf_token %}
-        <div class="form__item">
-            <label for="{{ answer_form.text.id_for_label }}" class="form__label">{{ answer_form.text.label }}</label>
-            {{ answer_form.text }}
-        </div>
-         {{ answer_form.correct.as_hidden }}
-        <div class="form__item">
-            <button type="submit" class="btn">Сохранить</button>
-        </div>
-    </form>
     {% endif %}
 
 </section>
