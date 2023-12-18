@@ -23,7 +23,10 @@ class Profile(models.Model):
 
     def get_grade(self):
         grade = {}
-        for subject in self.user.group_set.first().subjects.all():
+        group = self.user.group_set.first()
+        if not group:
+            return grade
+        for subject in group.subjects.all():
             subject_average_score = subject.get_user_average_score(self.user)
             if subject_average_score:
                 grade[subject] = subject_average_score

@@ -23,6 +23,7 @@
                 <th>Email</th>
                 <th>Группа</th>
                 <th></th>
+                <th></th>
             </tr>
         </thead>
         <tbody>
@@ -39,6 +40,9 @@
                 </td>
                 <td>
                     <a href="{% url 'student' user.id %}" class="btn btn-table">изменить</a>
+                </td>
+                <td>
+                    <a href="{% url 'group-student-grade' user.pk %}" class="btn btn-table">успеваемость</a>
                 </td>
             </tr>
             {% endfor %}

@@ -38,13 +38,13 @@ class IndexView(LoginRequiredMixin, View):
             "Группы": reverse_lazy("groups"),
             "Дисциплины": reverse_lazy("subjects"),
             "Занятия": reverse_lazy("lessons"),
-            "Тесты": reverse_lazy("tests"),
+            "Контроль знаний": reverse_lazy("tests"),
         },
         "teacher": {
             "Группы": reverse_lazy("my-group"),
             "Дисциплины": reverse_lazy("my-subjects"),
             "Занятия": reverse_lazy("my-lessons"),
-            "Тесты": reverse_lazy("tests"),
+            "Контроль знаний": reverse_lazy("tests"),
         }
     }
 
@@ -956,6 +956,24 @@ def remove_subject_from_group(request, subject_id):
     subject.groups.remove(group)
     messages.success(request, "Дисциплина удалена из вашей группы")
     return redirect(reverse("my-group"))
+
+
+@method_decorator(not_student, name="dispatch")
+class StudentGradeView(LoginRequiredMixin, View):
+
+    def get(self, request, *args, **kwargs):
+        student = get_object_or_404(User, pk=kwargs.get("pk"))
+        grade = student.profile.get_grade()
+        print(grade)
+
+        return render(
+            request,
+            "study/student-grade.html",
+            {
+                "student": student,
+                "grade": grade
+            }
+        )
 
 
 @method_decorator(teacher_only, name="dispatch")
