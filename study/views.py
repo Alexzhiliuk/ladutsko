@@ -541,7 +541,15 @@ class LessonEditView(LoginRequiredMixin, View):
         lesson = get_object_or_404(Lesson, pk=pk)
         form = LessonForm(instance=lesson, data=request.POST, files=request.FILES)
         if form.is_valid():
-            form.save()
+            edited_lesson = form.save(commit=False)
+            if edited_lesson.type == "CW" and not edited_lesson.test:
+                messages.error(request, "У контрольной работы должен быть тест")
+                return redirect(reverse("lesson", kwargs={"pk": pk}))
+            if edited_lesson.type == "CW" and not edited_lesson.test.can_be_control:
+                messages.error(request, "У контрольной работы тест должен состоять только из текстовых вопросов")
+                return redirect(reverse("lesson", kwargs={"pk": pk}))
+            edited_lesson.save()
+
             photos_field = request.FILES.getlist("photos")
             videos_field = request.FILES.getlist("videos")
             files_field = request.FILES.getlist("files")
@@ -586,7 +594,17 @@ class LessonCreateView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         form = LessonForm(data=request.POST, files=request.FILES)
         if form.is_valid():
-            new_lesson = form.save()
+            new_lesson = form.save(commit=False)
+
+            if new_lesson.type == "CW" and not new_lesson.test:
+                messages.error(request, "У контрольной работы должен быть тест")
+                return redirect(reverse("lesson-add"))
+            if new_lesson.type == "CW" and not new_lesson.test.can_be_control:
+                messages.error(request, "У контрольной работы тест должен состоять только из текстовых вопросов")
+                return redirect(reverse("lesson-add"))
+
+            new_lesson.save()
+
             photos_field = request.FILES.getlist("photos")
             videos_field = request.FILES.getlist("videos")
             files_field = request.FILES.getlist("files")

@@ -38,7 +38,7 @@
                 </td>
                 <td>
                     {% if object.test %}
-                    <a href="#" class="table__foreign-key">{{ object.test }}</a>
+                    <a href="{% url 'test' object.test.pk %}" class="table__foreign-key">{{ object.test }}</a>
                     {% else %}
                     Отсутсвует
                     {% endif %}

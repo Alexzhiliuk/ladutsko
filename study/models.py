@@ -123,6 +123,7 @@ class Lesson(models.Model):
         LECTURE = "LC", "Лекция"
         PRACTICAL = "PR", "Практическое занятия"
         LABORATORY = "LR", "Лабораторное занятие"
+        CONTROL = "CW", "Контрольная работа"
 
     type = models.CharField("Тип", max_length=32, choices=Type.choices)
     subject = models.ForeignKey(TeacherGroupSubject, related_name="lessons", on_delete=models.CASCADE, null=True, blank=True)

@@ -40,7 +40,7 @@
         <div class="form__item">
             <label for="{{ form.subject.id_for_label }}" class="form__label">{{ form.subject.label }}</label>
             <div class="form__input select" role="close">
-                <div class="select__selected">---</div>
+                <div class="select__selected">{{ subjects.first }}</div>
                 <div class="select__options">
                     {% for subject in subjects %}
                     <div class="select__option" data-value="{{ subject.pk }}">{{ subject }}</div>
