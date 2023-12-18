@@ -24,7 +24,7 @@ from .forms import (
     ExcelForm, TeacherGroupSubjectForm,
     GroupForTeacherSubjectForm, TestForm)
 from .models import Group, TeacherGroupSubject, Subject, Lesson, LessonPhoto, Test, Question, Answer, Try, LessonVideo, \
-    StudentAnswer
+    StudentAnswer, LessonFile
 
 
 class IndexView(LoginRequiredMixin, View):
@@ -544,6 +544,7 @@ class LessonEditView(LoginRequiredMixin, View):
             form.save()
             photos_field = request.FILES.getlist("photos")
             videos_field = request.FILES.getlist("videos")
+            files_field = request.FILES.getlist("files")
 
             if photos_field:
                 for photo in photos_field:
@@ -551,6 +552,9 @@ class LessonEditView(LoginRequiredMixin, View):
             if videos_field:
                 for video in videos_field:
                     LessonVideo.objects.create(video=video, lesson=lesson)
+            if files_field:
+                for file in files_field:
+                    LessonFile.objects.create(file=file, lesson=lesson)
 
             messages.success(request, "Занятие изменено!")
         return redirect(reverse("lesson", kwargs={"pk": pk}))
@@ -563,6 +567,7 @@ class LessonEditView(LoginRequiredMixin, View):
         types = Lesson.type.field.choices
         photos = lesson.photos.all()
         videos = lesson.videos.all()
+        files = lesson.files.all()
 
         return render(request, "study/lesson/edit.html", {
             "form": form,
@@ -572,6 +577,7 @@ class LessonEditView(LoginRequiredMixin, View):
             "types": types,
             "photos": photos,
             "videos": videos,
+            "files": files,
         })
 
 
@@ -583,6 +589,7 @@ class LessonCreateView(LoginRequiredMixin, View):
             new_lesson = form.save()
             photos_field = request.FILES.getlist("photos")
             videos_field = request.FILES.getlist("videos")
+            files_field = request.FILES.getlist("files")
 
             if photos_field:
                 for photo in photos_field:
@@ -590,6 +597,9 @@ class LessonCreateView(LoginRequiredMixin, View):
             if videos_field:
                 for video in videos_field:
                     LessonVideo.objects.create(video=video, lesson=new_lesson)
+            if files_field:
+                for file in files_field:
+                    LessonFile.objects.create(file=file, lesson=new_lesson)
 
             messages.success(request, "Занятие создано!")
 
@@ -628,6 +638,16 @@ def delete_lesson_video(request, pk):
     lesson_pk = video.lesson.pk
     video.delete()
     messages.success(request, "Видеоролик удален!")
+
+    return redirect(reverse("lesson", kwargs={"pk": lesson_pk}))
+
+
+@admin_only
+def delete_lesson_file(request, pk):
+    file = get_object_or_404(LessonFile, pk=pk)
+    lesson_pk = file.lesson.pk
+    file.delete()
+    messages.success(request, "Файл удален!")
 
     return redirect(reverse("lesson", kwargs={"pk": lesson_pk}))
 
@@ -986,6 +1006,7 @@ class MyLessonCreateView(LoginRequiredMixin, View):
             new_lesson = form.save()
             photos_field = request.FILES.getlist("photos")
             videos_field = request.FILES.getlist("videos")
+            files_field = request.FILES.getlist("files")
 
             if photos_field:
                 for photo in photos_field:
@@ -993,6 +1014,9 @@ class MyLessonCreateView(LoginRequiredMixin, View):
             if videos_field:
                 for video in videos_field:
                     LessonVideo.objects.create(video=video, lesson=new_lesson)
+            if files_field:
+                for file in files_field:
+                    LessonFile.objects.create(file=file, lesson=new_lesson)
 
             messages.success(request, "Занятие создано")
 
@@ -1021,6 +1045,7 @@ class MyLessonEditView(LoginRequiredMixin, View):
             form.save()
             photos_field = request.FILES.getlist("photos")
             videos_field = request.FILES.getlist("videos")
+            files_field = request.FILES.getlist("files")
 
             if photos_field:
                 for photo in photos_field:
@@ -1028,6 +1053,9 @@ class MyLessonEditView(LoginRequiredMixin, View):
             if videos_field:
                 for video in videos_field:
                     LessonVideo.objects.create(video=video, lesson=lesson)
+            if files_field:
+                for file in files_field:
+                    LessonFile.objects.create(file=file, lesson=lesson)
 
             messages.success(request, "Занятие изменено")
 
@@ -1040,12 +1068,18 @@ class MyLessonEditView(LoginRequiredMixin, View):
         tests = Test.objects.filter(lesson__isnull=True)
         subjects = TeacherGroupSubject.objects.filter(teacher=user)
         types = Lesson.type.field.choices
+        photos = lesson.photos.all()
+        videos = lesson.videos.all()
+        files = lesson.files.all()
         return render(request, "study/teacher/edit-lesson.html", {
             "lesson": lesson,
             "form": form,
             "tests": tests,
             "subjects": subjects,
-            "types": types
+            "types": types,
+            "photos": photos,
+            "videos": videos,
+            "files": files,
         })
 
 

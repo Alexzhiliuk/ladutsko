@@ -53,6 +53,13 @@ class Test(models.Model):
     def __str__(self):
         return self.name
 
+    @property
+    def can_be_control(self):
+        for question in self.questions.all():
+            if question.type == "CH":
+                return False
+        return True
+
     def get_question_score(self):
         return 100 / self.questions.count()
 
@@ -165,6 +172,18 @@ class LessonVideo(models.Model):
 
     def __str__(self):
         return f"Видео для {self.lesson.name}"
+
+
+class LessonFile(models.Model):
+    file = models.FileField(upload_to="lessons/files/")
+    lesson = models.ForeignKey(Lesson, related_name="files", on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name = "Файл"
+        verbose_name_plural = "Файлы"
+
+    def __str__(self):
+        return f"Файл для {self.lesson.name}"
 
 
 class Try(models.Model):

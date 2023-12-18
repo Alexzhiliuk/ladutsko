@@ -31,6 +31,12 @@
             {% endfor %}
         </div>
     </div>
+    <div class="mt-20">
+        <h2 class="h2">Дополнительные файлы</h2>
+        {% for file in lesson.files.all %}
+        <a href="{{ file.file.url }}" class="mt-20" style="display: flex;">{{ file.file|cut:"lessons/files/" }}</a>
+        {% endfor %}
+    </div>
 
     <div class="lesson-text mt-40">
         {% if lesson.text %}

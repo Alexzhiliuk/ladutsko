@@ -75,6 +75,7 @@ class LessonForm(forms.ModelForm):
 
     photos = forms.ImageField(label="Фото", required=False)
     videos = forms.FileField(label="Видео", required=False)
+    files = forms.FileField(label="Файлы", required=False)
 
     class Meta:
         model = Lesson
@@ -90,6 +91,7 @@ class LessonForm(forms.ModelForm):
         self.fields["text"].widget.attrs['class'] = 'form__input full-w'
         self.fields["photos"].widget.attrs['multiple'] = True
         self.fields["videos"].widget.attrs['multiple'] = True
+        self.fields["files"].widget.attrs['multiple'] = True
 
 
 class TestForm(forms.ModelForm):

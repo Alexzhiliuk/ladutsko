@@ -40,6 +40,7 @@ urlpatterns = [
     path("lesson/upload/", views.UploadLessonsView.as_view(), name="lessons-upload"),
     path("lesson/remove-photo/<int:pk>/", views.delete_lesson_photo, name="lesson-remove-photo"),
     path("lesson/remove-video/<int:pk>/", views.delete_lesson_video, name="lesson-remove-video"),
+    path("lesson/remove-file/<int:pk>/", views.delete_lesson_file, name="lesson-remove-file"),
 
     path("tests/", views.TestsListView.as_view(), name="tests"),
     path("test/<int:pk>/", views.TestEditView.as_view(), name="test"),

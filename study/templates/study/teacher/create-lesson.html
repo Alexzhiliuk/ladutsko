@@ -81,6 +81,10 @@
             {{ form.photos }}
         </div>
         <div class="form__item">
+            <label for="{{ form.files.id_for_label }}" class="form__label">{{ form.files.label }}</label>
+            {{ form.files }}
+        </div>
+        <div class="form__item">
             <label for="{{ form.text.id_for_label }}" class="form__label">{{ form.text.label }}</label>
             {{ form.text }}
         </div>

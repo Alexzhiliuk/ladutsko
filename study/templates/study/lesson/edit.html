@@ -79,7 +79,7 @@
                 Сейчас для урока добавлены следующие видеоролики: <br>
                 {% for video in videos %}
                 <div style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px;">
-                    <a href="{{ video.video.url }}">{{ video.video }}</a>
+                    <a href="{{ video.video.url }}">{{ video.video|cut:"lessons/videos/" }}</a>
                     <a href="{% url 'lesson-remove-video' video.pk %}" class="btn btn-table btn_red confirm">Удалить видео</a>
                 </div>
                 {% endfor %}
@@ -101,6 +101,21 @@
             </p>
             {% endif %}
             {{ form.photos }}
+        </div>
+        <div class="form__item">
+            <label for="{{ form.files.id_for_label }}" class="form__label">{{ form.files.label }}</label>
+            {% if files %}
+            <p>
+                Сейчас загружены файлы: <br>
+                {% for file in files %}
+                <div style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px;">
+                    <a href="{{ file.file.url }}">{{ file.file|cut:"lessons/files/" }}</a>
+                    <a href="{% url 'lesson-remove-file' file.pk %}" class="btn btn-table btn_red confirm">Удалить файл</a>
+                </div>
+                {% endfor %}
+            </p>
+            {% endif %}
+            {{ form.files }}
         </div>
         <div class="form__item">
             <label for="{{ form.text.id_for_label }}" class="form__label">{{ form.text.label }}</label>
