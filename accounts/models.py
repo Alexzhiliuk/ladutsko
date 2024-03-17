@@ -34,6 +34,10 @@ class Profile(models.Model):
                 grade[subject] = "-"
         return grade
 
+    @property
+    def fio(self):
+        return f"{self.user.first_name} {self.user.last_name} {self.middle_name}"
+
 
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
