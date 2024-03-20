@@ -5,9 +5,9 @@ from rest_framework import routers
 router = routers.DefaultRouter()
 
 urlpatterns = [
-    path('v1/subject-create/', api_views.SubjectCreateView.as_view()),
-    path('v1/subject-edit/<int:pk>/', api_views.SubjectEditView.as_view()),
-    path('v1/test-create/', api_views.TestCreateView.as_view()),
-    path('v1/test-edit/<int:pk>/', api_views.TestEditView.as_view()),
-    path('v1/test-question-add/<int:pk>/', api_views.TestQuestionCreateView.as_view()),
+    path('v1/subject-create/', api_views.SubjectCreateView.as_view(), name="subject-create-view"),
+    path('v1/subject-edit/<int:pk>/', api_views.SubjectEditView.as_view(), name="subject-edit-view"),
+    path('v1/test-create/', api_views.TestCreateView.as_view(), name="test-create-view"),
+    path('v1/test-edit/<int:pk>/', api_views.TestEditView.as_view(), name="test-edit-view"),
+    path('v1/test-question-add/<int:pk>/', api_views.TestQuestionCreateView.as_view(), name="test-question-create-view"),
 ]

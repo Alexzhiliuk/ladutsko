@@ -20,9 +20,9 @@ class ProfileEditSerializer(serializers.ModelSerializer):
         model = Profile
         fields = ['middle_name']
 
-# {
-#  "email": "" ,
-#  "first_name": "",
-# "last_name": "",
-# "middle_name": ""
-# }
+{
+ "email": "" ,
+ "first_name": "",
+"last_name": "",
+"middle_name": ""
+}
