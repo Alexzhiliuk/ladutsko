@@ -13,7 +13,20 @@ class TestSerializer(serializers.ModelSerializer):
         model = Test
         fields = ['name']
 
+
+class QuestionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Question
+        fields = ['text', 'type']
+
 #
 # {
 #  "name": "" ,
+# }
+
+# {
+# "text": "Q3",
+# "type": "CH",
+# "answer-1": "A1",
+# "answer-1-correct": 1
 # }

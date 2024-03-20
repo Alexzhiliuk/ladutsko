@@ -42,7 +42,7 @@ INSTALLED_APPS = [
     'study.apps.StudyConfig',
 
     'rest_framework',
-    # 'rest_framework.authtoken',
+    'rest_framework.authtoken',
 ]
 
 MIDDLEWARE = [
@@ -150,7 +150,7 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        # 'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
         'rest_framework.authentication.SessionAuthentication',
     ]
 }

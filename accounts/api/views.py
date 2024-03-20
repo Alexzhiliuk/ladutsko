@@ -5,7 +5,7 @@ from rest_framework.decorators import action
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.contrib.auth.models import User
-from rest_framework.authentication import SessionAuthentication
+from rest_framework.authentication import SessionAuthentication, TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 
 from accounts.forms import ApplicationForm, UserEditForm, ProfileEditForm
@@ -33,7 +33,7 @@ class ApplicationView(APIView):
 
 
 class ProfileView(APIView):
-	authentication_classes = [SessionAuthentication]
+	authentication_classes = [SessionAuthentication, TokenAuthentication]
 	permission_classes = [IsAuthenticated]
 
 	def put(self, request, format=None):
@@ -60,4 +60,3 @@ class ProfileView(APIView):
 			"profile_form": profile_form.as_div(),
 		}
 		return Response(response)
-
