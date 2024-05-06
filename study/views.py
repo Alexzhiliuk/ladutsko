@@ -93,15 +93,7 @@ class TeacherEditView(LoginRequiredMixin, View):
             user.username = user.email
             user.save()
 
-            group = profile_form.cleaned_data.get("group")
-            profile = profile_form.save()
-
-            if group.owner and group.owner != user:
-                messages.error(request, f"У группы {group.name} уже есть проподаватель!")
-                return redirect(reverse("teacher", kwargs={"pk": pk}))
-
-            group.owner = profile.user
-            group.save()
+            profile_form.save()
 
             messages.success(request, "Преподаватель успешно изменен!")
 
