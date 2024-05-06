@@ -83,10 +83,17 @@ class Test(models.Model):
                 for answer in question.answers.all():
                     answers[answer.pk] = answer.correct
                 correct_choices = 0  # количетсво совпадений
+                incorrect_choices = 0
                 for ans_pk, is_correct in answers.items():
-                    if is_correct and data.get(str(ans_pk)) or not is_correct and not data.get(str(ans_pk)):
+                    if is_correct and data.get(str(ans_pk)):
                         correct_choices += 1
-                try_score += question_score * (correct_choices / len(answers))
+                    elif not is_correct and not data.get(str(ans_pk)):
+                        correct_choices += 1
+                    else:
+                        incorrect_choices += 1
+                ans_score = question_score * (correct_choices / len(answers)) - question_score * (incorrect_choices / len(answers))
+                if ans_score > 0:
+                    try_score += ans_score
             elif question.type == "TX":
                 student_answer = data.get(str(question.answers.first().pk))
                 StudentAnswer.objects.create(user=user, question=question, answer=student_answer)
@@ -163,6 +170,8 @@ class Lesson(models.Model):
         return 0
 
     def is_late(self):
+        if not self.deadline:
+            return False
         utc = pytz.UTC
         now = utc.localize(dt.now())
         if now > self.deadline:
