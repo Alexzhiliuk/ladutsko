@@ -39,10 +39,14 @@ urlpatterns = [
     path("v1/lesson/<int:pk>/", api_views.LessonEditView.as_view(), name="api-lesson"),
     path("v1/lesson/add/", api_views.LessonCreateView.as_view(), name="api-lesson-add"),
     path("v1/lesson/delete/<int:pk>/", api_views.DeleteLessonView.as_view(), name="api-lesson-delete"),
+    path("v1/lesson/<int:pk>/add-photo/", api_views.LessonPhotoAddingView.as_view(), name="api-lesson-add-photo"),
+    path("v1/lesson/<int:pk>/add-video/", api_views.LessonVideoAddingView.as_view(), name="api-lesson-add-video"),
+    path("v1/lesson/<int:pk>/add-file/", api_views.LessonFileAddingView.as_view(), name="api-lesson-add-file"),
     path("v1/lesson/delete-photo/<int:pk>/", api_views.DeleteLessonPhotoView.as_view(), name="api-lesson-delete-photo"),
     path("v1/lesson/delete-video/<int:pk>/", api_views.DeleteLessonVideoView.as_view(), name="api-lesson-delete-video"),
     path("v1/lesson/delete-file/<int:pk>/", api_views.DeleteLessonFileView.as_view(), name="api-lesson-delete-file"),
     path("v1/lesson/check-work/<int:pk>/", api_views.CheckStudentWork.as_view(), name="api-lesson-check-work"),
+
 
     path("v1/tests/", api_views.TestsListView.as_view(), name="api-tests"),
     path('v1/test/<int:pk>/', api_views.TestEditView.as_view(), name="api-test"),

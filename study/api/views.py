@@ -53,8 +53,9 @@ class IndexView(APIView):
             response = {"menu": self.menu["teacher"]}
         if user.profile.type == 3:
             response = {
-                    "menu": {subject.name_for_student: reverse_lazy("student-subject", kwargs={"pk": subject.pk}) for subject in user.group_set.first().subjects.all()}
-                }
+                "menu": {subject.name_for_student: reverse_lazy("student-subject", kwargs={"pk": subject.pk}) for
+                         subject in user.group_set.first().subjects.all()}
+            }
 
         return Response(response)
 
@@ -111,7 +112,6 @@ class TeacherEditView(APIView):
 
 
 class TeacherCreateView(APIView):
-
     authentication_classes = [SessionAuthentication, TokenAuthentication]
     permission_classes = [AdminOnly]
 
@@ -207,7 +207,7 @@ class StudentEditView(APIView):
             profile_serializer.save()
 
             if group:
-                if not(user in group.students.all()):
+                if not (user in group.students.all()):
                     if user_group:
                         user_group.students.remove(user)
                     group.students.add(user)
@@ -239,6 +239,7 @@ class StudentEditView(APIView):
 class StudentCreateView(APIView):
     authentication_classes = [SessionAuthentication, TokenAuthentication]
     permission_classes = [AdminOnly]
+
     # {
     #     "first_name": "test",
     #     "last_name": "test",
@@ -338,7 +339,7 @@ class ApplicationView(APIView):
             "application": ApplicationSerializer(application).data
         }
 
-        if not(Group.objects.filter(number=application.group_number).first()):
+        if not (Group.objects.filter(number=application.group_number).first()):
             response["detail"] = "Пользователь указал несуществующую группу!"
 
         return Response(response)
@@ -407,7 +408,6 @@ class GroupCreateView(APIView):
     def put(self, request, *args, **kwargs):
         serializer = GroupSerializer(data=request.data)
         if serializer.is_valid():
-
             serializer.save()
             return Response({"detail": "Группа успешно создана!"}, status=status.HTTP_200_OK)
 
@@ -440,7 +440,6 @@ class ExcludeStudentView(APIView):
 
 
 class TeacherGroupSubjectCreateView(APIView):
-
     authentication_classes = [SessionAuthentication, TokenAuthentication]
     permission_classes = [AdminOnly]
 
@@ -473,7 +472,6 @@ class DeleteTeacherGroupSubjectView(generics.DestroyAPIView):
 
 
 class GroupStudentsListView(APIView):
-
     authentication_classes = [SessionAuthentication, TokenAuthentication]
     permission_classes = [AdminOnly]
 
@@ -523,7 +521,6 @@ class SubjectEditView(APIView):
 
 
 class SubjectCreateView(APIView):
-
     authentication_classes = [SessionAuthentication, TokenAuthentication]
     permission_classes = [NotStudent]
 
@@ -562,6 +559,75 @@ class LessonsListView(generics.ListAPIView):
 
     authentication_classes = [SessionAuthentication, TokenAuthentication]
     permission_classes = [AdminOnly]
+
+
+from rest_framework.parsers import FileUploadParser
+
+
+class LessonPhotoAddingView(APIView):
+    authentication_classes = [SessionAuthentication, TokenAuthentication]
+    permission_classes = [NotStudent]
+
+    parser_classes = (FileUploadParser,)
+
+    def put(self, request, pk, format=None, *args, **kwargs):
+
+        lesson = get_object_or_404(Lesson, pk=pk)
+
+        try:
+            photo = request.FILES.get("file")
+            new_photo = LessonPhoto.objects.create(photo=photo, lesson=lesson)
+
+            return Response(
+                {"detail": "Изображение успешно добавлено!", "photo": LessonPhotoSerializer(new_photo).data},
+                status=status.HTTP_200_OK)
+        except Exception:
+            return Response({"detail": "Произошла ошибка при добавлении изображения"},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+
+class LessonVideoAddingView(APIView):
+    authentication_classes = [SessionAuthentication, TokenAuthentication]
+    permission_classes = [NotStudent]
+
+    parser_classes = (FileUploadParser,)
+
+    def put(self, request, pk, format=None, *args, **kwargs):
+
+        lesson = get_object_or_404(Lesson, pk=pk)
+
+        try:
+            video = request.FILES.get("file")
+            new_video = LessonVideo.objects.create(video=video, lesson=lesson)
+
+            return Response(
+                {"detail": "Видео успешно добавлено!", "photo": LessonVideoSerializer(new_video).data},
+                status=status.HTTP_200_OK)
+        except Exception:
+            return Response({"detail": "Произошла ошибка при добавлении видео"},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+
+class LessonFileAddingView(APIView):
+    authentication_classes = [SessionAuthentication, TokenAuthentication]
+    permission_classes = [NotStudent]
+
+    parser_classes = (FileUploadParser,)
+
+    def put(self, request, pk, format=None, *args, **kwargs):
+
+        lesson = get_object_or_404(Lesson, pk=pk)
+
+        try:
+            file = request.FILES.get("file")
+            new_file = LessonFile.objects.create(file=file, lesson=lesson)
+
+            return Response(
+                {"detail": "Файл успешно добавлен!", "photo": LessonFileSerializer(new_file).data},
+                status=status.HTTP_200_OK)
+        except Exception:
+            return Response({"detail": "Произошла ошибка при добавлении файла"},
+                            status=status.HTTP_400_BAD_REQUEST)
 
 
 class LessonEditView(APIView):
@@ -625,12 +691,12 @@ class LessonCreateView(APIView):
         if serializer.is_valid():
             serializer.save()
 
-            return Response({"detail": "Занятие успешно создано!", "lesson": serializer.data}, status=status.HTTP_200_OK)
+            return Response({"detail": "Занятие успешно создано!", "lesson": serializer.data},
+                            status=status.HTTP_200_OK)
 
         return Response({"detail": "Ошибка при создании занятия."}, status=status.HTTP_400_BAD_REQUEST)
 
     def get(self, request, *args, **kwargs):
-
         form = LessonForm()
         subjects = TeacherGroupSubject.objects.all()
         tests = Test.objects.filter(lesson__isnull=True)
@@ -716,7 +782,6 @@ class TestsListView(generics.ListAPIView):
 
 
 class TestCreateView(APIView):
-
     authentication_classes = [SessionAuthentication, TokenAuthentication]
     permission_classes = [NotStudent]
 
@@ -738,7 +803,6 @@ class TestCreateView(APIView):
 
 
 class TestEditView(APIView):
-
     authentication_classes = [SessionAuthentication, TokenAuthentication]
     permission_classes = [NotStudent]
 
@@ -911,7 +975,6 @@ class DeleteAnswerView(generics.DestroyAPIView):
 
 
 class MyGroupListView(generics.ListAPIView):
-
     serializer_class = GroupSerializer
 
     authentication_classes = [SessionAuthentication, TokenAuthentication]
@@ -1008,7 +1071,6 @@ class MySubjectEditView(APIView):
 
 
 class MySubjectCreateView(APIView):
-
     authentication_classes = [SessionAuthentication, TokenAuthentication]
     permission_classes = [TeacherOnly]
 
@@ -1106,12 +1168,12 @@ class MyLessonCreateView(APIView):
         if serializer.is_valid():
             serializer.save()
 
-            return Response({"detail": "Занятие успешно создано!", "lesson": serializer.data}, status=status.HTTP_200_OK)
+            return Response({"detail": "Занятие успешно создано!", "lesson": serializer.data},
+                            status=status.HTTP_200_OK)
 
         return Response({"detail": "Ошибка при создании занятия."}, status=status.HTTP_400_BAD_REQUEST)
 
     def get(self, request, *args, **kwargs):
-
         form = LessonForm()
         subjects = TeacherGroupSubject.objects.all()
         tests = Test.objects.filter(lesson__isnull=True)
@@ -1193,7 +1255,9 @@ class StudentLessonView(APIView):
 class StudentIndividualWorkView(APIView):
     authentication_classes = [SessionAuthentication, TokenAuthentication]
 
-    def put(self, request, pk, *args, **kwargs):
+    parser_classes = (FileUploadParser,)
+
+    def put(self, request, pk, format=None, *args, **kwargs):
         user = self.request.user
         lesson = get_object_or_404(Lesson, pk=pk)
 
@@ -1205,11 +1269,17 @@ class StudentIndividualWorkView(APIView):
         if StudentIndividualWork.objects.filter(user=user, lesson=lesson):
             return Response({"detail": "Вы уже отправили работу!"}, status=status.HTTP_400_BAD_REQUEST)
 
-        work_serializer = StudentWorkSerializer(data=request.data)
-        if work_serializer.is_valid():
-            return Response({"detail": "Работа отправлена на проверку"}, status=status.HTTP_200_OK)
+        try:
+            file = request.FILES.get("file")
+            new_work = StudentIndividualWork.objects.create(file=file, lesson=lesson, user=user)
 
-        return Response({"detail": "Ошибка в отправленных данных"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"detail": "Файл успешно добавлен!", "work": StudentWorkSerializer(new_work).data},
+                status=status.HTTP_200_OK)
+
+        except Exception:
+            return Response({"detail": "Произошла ошибка при добавлении работы"},
+                            status=status.HTTP_400_BAD_REQUEST)
 
 
 class StudentTestView(APIView):
@@ -1247,4 +1317,3 @@ class StudentTestView(APIView):
         return Response({
             "test": TestSerializer(test).data,
         })
-
