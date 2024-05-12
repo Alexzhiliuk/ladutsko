@@ -25,8 +25,8 @@ urlpatterns = [
     path("v1/group/add/", api_views.GroupCreateView.as_view(), name="api-group-add"),
     path("v1/group/delete/<int:pk>/", api_views.DeleteGroupView.as_view(), name="api-group-delete"),
     path("v1/group/<int:pk>/students/", api_views.GroupStudentsListView.as_view(), name="api-group-students"),
-    path("v1/group/<int:pk>/add-subject", api_views.TeacherGroupSubjectCreateView.as_view(), name="api-group-add-subject"),
-    path("v1/group/<int:pk>/remove-subject", api_views.DeleteTeacherGroupSubjectView.as_view(), name="api-group-remove-subject"),
+    path("v1/group/<int:pk>/add-subject/", api_views.TeacherGroupSubjectCreateView.as_view(), name="api-group-add-subject"),
+    path("v1/group/<int:pk>/remove-subject/", api_views.DeleteTeacherGroupSubjectView.as_view(), name="api-group-remove-subject"),
     path("v1/group/exclude-student/<int:pk>/", api_views.ExcludeStudentView.as_view(), name="api-group-exclude-student"),
     path("v1/group/student-grade/<int:pk>/", api_views.StudentGradeView.as_view(), name="api-group-student-grade"),
 

@@ -993,7 +993,7 @@ class AddSubjectToGroup(APIView):
         group = request.user.study_groups.first()
 
         if not group:
-            return Response({"detail": "У вас нет группы"}, status=status.HTTP_200_OK)
+            return Response({"detail": "У вас нет группы"}, status=status.HTTP_400_BAD_REQUEST)
 
         subject.groups.add(group)
         return Response({"detail": "Дисциплина добавлена"}, status=status.HTTP_200_OK)
