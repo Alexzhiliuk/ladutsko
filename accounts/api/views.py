@@ -60,3 +60,10 @@ class ProfileView(APIView):
 			"profile_form": profile_form.as_div(),
 		}
 		return Response(response)
+
+
+class LogoutView(APIView):
+
+	def get(self, request, format=None):
+		request.user.auth_token.delete()
+		return Response(status=status.HTTP_200_OK)
