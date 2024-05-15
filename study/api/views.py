@@ -79,7 +79,7 @@ class TeacherEditView(APIView):
     # "middle_name": "Кириллович"
     # }
 
-    def put(self, request, pk, format=None):
+    def post(self, request, pk, format=None):
         teacher = get_object_or_404(User, pk=pk)
         user_serializer = UserEditSerializer(instance=teacher, data=request.data)
         profile_serializer = ProfileEditSerializer(instance=teacher.profile, data=request.data)
@@ -122,7 +122,7 @@ class TeacherCreateView(APIView):
     # "password": "1",
     # "middle_name": "test"
     # }
-    def put(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         user_serializer = UserCreateSerializer(data=request.data)
         profile_serializer = ProfileEditSerializer(data=request.data)
 
@@ -192,7 +192,7 @@ class StudentEditView(APIView):
     #     "group": "1"
     # }
 
-    def put(self, request, pk, format=None):
+    def post(self, request, pk, format=None):
         student = get_object_or_404(User, pk=pk)
         user_serializer = UserEditSerializer(instance=student, data=request.data)
         profile_serializer = StudentSerializer(instance=student.profile, data=request.data)
@@ -249,7 +249,7 @@ class StudentCreateView(APIView):
     #     "group": "1"
     # }
 
-    def put(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         user_serializer = UserCreateSerializer(data=request.data)
         profile_serializer = StudentSerializer(data=request.data)
 
@@ -369,7 +369,7 @@ class GroupEditView(APIView):
     # {
     #     "number": "456"
     # }
-    def put(self, request, pk, *args, **kwargs):
+    def post(self, request, pk, *args, **kwargs):
         group = get_object_or_404(Group, pk=pk)
         serializer = GroupSerializer(instance=group, data=request.data)
         if serializer.is_valid():
@@ -405,7 +405,7 @@ class GroupCreateView(APIView):
     # {
     #     "number": "456"
     # }
-    def put(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         serializer = GroupSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -431,7 +431,7 @@ class ExcludeStudentView(APIView):
     authentication_classes = [SessionAuthentication, TokenAuthentication]
     permission_classes = [AdminOnly]
 
-    def put(self, request, pk, *args, **kwargs):
+    def post(self, request, pk, *args, **kwargs):
         student = get_object_or_404(User, pk=pk)
         group = student.group_set.first()
         group.students.remove(student)
@@ -447,7 +447,7 @@ class TeacherGroupSubjectCreateView(APIView):
     #     "teacher": "3",
     #     "subject": "2"
     # }
-    def put(self, request, pk, *args, **kwargs):
+    def post(self, request, pk, *args, **kwargs):
         group = get_object_or_404(Group, pk=pk)
         serializer = TeacherGroupSubjectSerializer(data=request.data)
         if serializer.is_valid():
@@ -497,7 +497,7 @@ class SubjectEditView(APIView):
     authentication_classes = [SessionAuthentication, TokenAuthentication]
     permission_classes = [AdminOnly]
 
-    def put(self, request, pk, *args, **kwargs):
+    def post(self, request, pk, *args, **kwargs):
         subject = get_object_or_404(Subject, pk=pk)
         serializer = SubjectSerializer(instance=subject, data=request.data)
         if serializer.is_valid():
@@ -527,7 +527,7 @@ class SubjectCreateView(APIView):
     # {
     #     "name": "456"
     # }
-    def put(self, request, format=None):
+    def post(self, request, format=None):
         serializer = SubjectSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -570,7 +570,7 @@ class LessonPhotoAddingView(APIView):
 
     parser_classes = (FileUploadParser,)
 
-    def put(self, request, pk, format=None, *args, **kwargs):
+    def post(self, request, pk, format=None, *args, **kwargs):
 
         lesson = get_object_or_404(Lesson, pk=pk)
 
@@ -592,7 +592,7 @@ class LessonVideoAddingView(APIView):
 
     parser_classes = (FileUploadParser,)
 
-    def put(self, request, pk, format=None, *args, **kwargs):
+    def post(self, request, pk, format=None, *args, **kwargs):
 
         lesson = get_object_or_404(Lesson, pk=pk)
 
@@ -614,7 +614,7 @@ class LessonFileAddingView(APIView):
 
     parser_classes = (FileUploadParser,)
 
-    def put(self, request, pk, format=None, *args, **kwargs):
+    def post(self, request, pk, format=None, *args, **kwargs):
 
         lesson = get_object_or_404(Lesson, pk=pk)
 
@@ -642,7 +642,7 @@ class LessonEditView(APIView):
     #     "subject": 2,
     #     "test": 7
     # }
-    def put(self, request, pk, *args, **kwargs):
+    def post(self, request, pk, *args, **kwargs):
         lesson = get_object_or_404(Lesson, pk=pk)
         serializer = LessonSerializer(instance=lesson, data=request.data)
         if serializer.is_valid():
@@ -686,7 +686,7 @@ class LessonCreateView(APIView):
     #     "subject": 2,
     #     "test": 7
     # }
-    def put(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         serializer = LessonSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -753,7 +753,7 @@ class CheckStudentWork(APIView):
     # {
     #     "score": 9
     # }
-    def put(self, request, pk, *args, **kwargs):
+    def post(self, request, pk, *args, **kwargs):
         work = get_object_or_404(StudentIndividualWork, pk=pk)
 
         score = request.data.get("score")
@@ -781,11 +781,31 @@ class TestsListView(generics.ListAPIView):
     permission_classes = [NotStudent]
 
 
+class TestQuestionsListView(generics.ListAPIView):
+    serializer_class = QuestionSerializer
+
+    authentication_classes = [SessionAuthentication, TokenAuthentication]
+    permission_classes = [NotStudent]
+
+    def get_queryset(self):
+        return Question.objects.filter(test__id=self.kwargs['pk'])
+
+
+class QuestionAnswersListView(generics.ListAPIView):
+    serializer_class = AnswerSerializer
+
+    authentication_classes = [SessionAuthentication, TokenAuthentication]
+    permission_classes = [NotStudent]
+
+    def get_queryset(self):
+        return Answer.objects.filter(question__id=self.kwargs['pk'])
+
+
 class TestCreateView(APIView):
     authentication_classes = [SessionAuthentication, TokenAuthentication]
     permission_classes = [NotStudent]
 
-    def put(self, request, format=None):
+    def post(self, request, format=None):
         serializer = TestSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -806,7 +826,7 @@ class TestEditView(APIView):
     authentication_classes = [SessionAuthentication, TokenAuthentication]
     permission_classes = [NotStudent]
 
-    def put(self, request, pk, format=None):
+    def post(self, request, pk, format=None):
         test = get_object_or_404(Test, pk=pk)
         serializer = TestSerializer(instance=test, data=request.data)
         if serializer.is_valid():
@@ -838,7 +858,7 @@ class CheckTestView(APIView):
     authentication_classes = [SessionAuthentication, TokenAuthentication]
     permission_classes = [NotStudent]
 
-    def put(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         student_try = get_object_or_404(Try, pk=kwargs["pk"])
 
         student_try.checking(request.data)
@@ -857,7 +877,7 @@ class TestQuestionCreateView(APIView):
     authentication_classes = [SessionAuthentication, TokenAuthentication]
     permission_classes = [NotStudent]
 
-    def put(self, request, pk, format=None):
+    def post(self, request, pk, format=None):
         serializer = QuestionSerializer(data=request.data)
         if serializer.is_valid():
             new_question = serializer.save(test=get_object_or_404(Test, pk=pk))
@@ -904,7 +924,7 @@ class TestQuestionEditView(APIView):
     #     "type": "CH",
     #     "text": "Q3"
     # }
-    def put(self, request, pk, *args, **kwargs):
+    def post(self, request, pk, *args, **kwargs):
         question = get_object_or_404(Question, pk=pk)
         serializer = QuestionSerializer(instance=question, data=request.data)
         if serializer.is_valid():
@@ -929,7 +949,7 @@ class AddAnswerVariantView(APIView):
     authentication_classes = [SessionAuthentication, TokenAuthentication]
     permission_classes = [NotStudent]
 
-    def put(self, request, pk, *args, **kwargs):
+    def post(self, request, pk, *args, **kwargs):
         question = get_object_or_404(Question, pk=pk)
         serializer = AnswerSerializer(data=request.data)
         if serializer.is_valid():
@@ -945,7 +965,7 @@ class AddCorrectTextAnswerView(APIView):
     authentication_classes = [SessionAuthentication, TokenAuthentication]
     permission_classes = [NotStudent]
 
-    def put(self, request, pk, *args, **kwargs):
+    def post(self, request, pk, *args, **kwargs):
 
         question = get_object_or_404(Question, pk=pk)
         serializer = AnswerSerializer(data=request.data)
@@ -988,7 +1008,7 @@ class AddSubjectToGroup(APIView):
     authentication_classes = [SessionAuthentication, TokenAuthentication]
     permission_classes = [TeacherOnly]
 
-    def put(self, request, pk, *args, **kwargs):
+    def post(self, request, pk, *args, **kwargs):
         subject = get_object_or_404(Subject, pk=pk)
         group = request.user.study_groups.first()
 
@@ -1003,7 +1023,7 @@ class RemoveSubjectFromGroup(APIView):
     authentication_classes = [SessionAuthentication, TokenAuthentication]
     permission_classes = [TeacherOnly]
 
-    def put(self, request, pk, *args, **kwargs):
+    def post(self, request, pk, *args, **kwargs):
         subject = get_object_or_404(Subject, pk=pk)
         group = request.user.study_groups.first()
 
@@ -1043,7 +1063,7 @@ class MySubjectEditView(APIView):
     authentication_classes = [SessionAuthentication, TokenAuthentication]
     permission_classes = [TeacherOnly]
 
-    def put(self, request, pk, *args, **kwargs):
+    def post(self, request, pk, *args, **kwargs):
         subject = get_object_or_404(Subject, pk=pk)
         serializer = SubjectSerializer(instance=subject, data=request.data)
         if serializer.is_valid():
@@ -1077,7 +1097,7 @@ class MySubjectCreateView(APIView):
     # {
     #     "name": "456"
     # }
-    def put(self, request, format=None):
+    def post(self, request, format=None):
         serializer = SubjectSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -1119,7 +1139,7 @@ class MyLessonEditView(APIView):
     #     "subject": 2,
     #     "test": 7
     # }
-    def put(self, request, pk, *args, **kwargs):
+    def post(self, request, pk, *args, **kwargs):
         lesson = get_object_or_404(Lesson, pk=pk)
         serializer = LessonSerializer(instance=lesson, data=request.data)
         if serializer.is_valid():
@@ -1163,7 +1183,7 @@ class MyLessonCreateView(APIView):
     #     "subject": 2,
     #     "test": 7
     # }
-    def put(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         serializer = LessonSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -1257,7 +1277,7 @@ class StudentIndividualWorkView(APIView):
 
     parser_classes = (FileUploadParser,)
 
-    def put(self, request, pk, format=None, *args, **kwargs):
+    def post(self, request, pk, format=None, *args, **kwargs):
         user = self.request.user
         lesson = get_object_or_404(Lesson, pk=pk)
 
@@ -1285,7 +1305,7 @@ class StudentIndividualWorkView(APIView):
 class StudentTestView(APIView):
     authentication_classes = [SessionAuthentication, TokenAuthentication]
 
-    def put(self, request, pk, *args, **kwargs):
+    def post(self, request, pk, *args, **kwargs):
         user = self.request.user
         test = get_object_or_404(Test, pk=pk)
 

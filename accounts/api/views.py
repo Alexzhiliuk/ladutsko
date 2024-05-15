@@ -15,7 +15,7 @@ from accounts.api.serializers import *
 
 class ApplicationView(APIView):
 
-	def put(self, request, format=None):
+	def post(self, request, format=None):
 		serializer = ApplicationSerializer(data=request.data)
 		if serializer.is_valid():
 			serializer.save()
@@ -36,7 +36,7 @@ class ProfileView(APIView):
 	authentication_classes = [SessionAuthentication, TokenAuthentication]
 	permission_classes = [IsAuthenticated]
 
-	def put(self, request, format=None):
+	def post(self, request, format=None):
 		user = request.user
 		user_serializer = UserEditSerializer(instance=user, data=request.data)
 		profile_serializer = ProfileEditSerializer(instance=user.profile, data=request.data)
