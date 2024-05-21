@@ -5,8 +5,9 @@
 	padding: 20px;
 	max-width: 480px;
 	width: 100%;
-	border-radius: 10px;
-	border: 2px solid var(--gray);
+	border-radius: 6px;
+	background: #FFF;
+	border: 1px solid var(--gray);
 	display: block;
 	position: relative;
 	cursor: pointer;
@@ -24,10 +25,10 @@
 .select__options {
 	position: absolute;
 	top: 100%;
-	left: -2px;
-	right: -2px;
+	left: -1px;
+	right: -1px;
 	border-top: unset !important;
-	border: 2px solid var(--gray);
+	border: 1px solid var(--gray);
 	z-index: 99;
 }
 
