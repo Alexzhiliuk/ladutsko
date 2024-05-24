@@ -57,6 +57,7 @@ urlpatterns = [
     path("v1/test/question/<int:pk>/", api_views.TestQuestionEditView.as_view(), name="api-test-question"),
     path("v1/test/question/<int:pk>/delete", api_views.DeleteQuestionView.as_view(), name="api-test-question-delete"),
     path("v1/test/try/<int:pk>/check/", api_views.CheckTestView.as_view(), name="api-test-try-check"),
+    path("v1/test/<int:pk>/tries/", api_views.TryListView.as_view(), name="api-test-try-list"),
 
     path("v1/question/<int:pk>/add-answer-variant/", api_views.AddAnswerVariantView.as_view(), name="api-add-answer-variant"),
     path("v1/question/<int:pk>/add-correct-text-answer/", api_views.AddCorrectTextAnswerView.as_view(), name="api-add-correct-text-answer"),

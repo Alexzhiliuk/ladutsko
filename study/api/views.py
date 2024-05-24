@@ -873,6 +873,16 @@ class CheckTestView(APIView):
         })
 
 
+class TryListView(generics.ListAPIView):
+    serializer_class = TrySerializer
+
+    authentication_classes = [SessionAuthentication, TokenAuthentication]
+    permission_classes = [NotStudent]
+
+    def get_queryset(self):
+        return Try.objects.filter(test__id=self.kwargs['pk'])
+
+
 class TestQuestionCreateView(APIView):
     authentication_classes = [SessionAuthentication, TokenAuthentication]
     permission_classes = [NotStudent]
