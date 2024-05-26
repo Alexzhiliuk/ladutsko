@@ -17,7 +17,7 @@ class LoginView(View):
             user = authenticate(
                 request, username=cd["username"], password=cd["password"]
             )
-            if user is None:
+            if not user:
                 messages.error(request, "Неверный логин или пароль!")
                 return render(request, "accounts/login.html", {"form": form})
 
